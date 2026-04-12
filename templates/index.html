@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Titan Smart Scheduler V2</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <div class="ambient ambient-a"></div>
+  <div class="ambient ambient-b"></div>
+  <main class="shell">
+    <section class="hero-card glass">
+      <div>
+        <p class="eyebrow">Titan Smart Scheduler V2</p>
+        <h1>Ethical staffing for a student-heavy workforce.</h1>
+        <p class="lede">Built for Titan Shops style scheduling constraints: academic protection, fair workload balancing, backup coverage for callouts, and manager-friendly risk signals.</p>
+      </div>
+      <button id="themeToggle" class="ghost-btn" type="button">Toggle theme</button>
+    </section>
+
+    <section class="workspace">
+      <aside class="panel glass form-panel">
+        <div class="panel-heading">
+          <h2>Build the schedule</h2>
+          <p>Choose the scheduling mode, tune the student context, and generate a smarter schedule with coverage planning.</p>
+        </div>
+
+        <div class="segmented" id="modeSwitch">
+          <button class="segment active" data-mode="round_robin" type="button">Round Robin</button>
+          <button class="segment" data-mode="custom" type="button">Smart Custom</button>
+        </div>
+
+        <div class="grid-two compact-gap">
+          <label>
+            <span>Algorithm</span>
+            <select id="algorithm">
+              <option value="circle" selected>Circle Method</option>
+              <option value="standard">Standard Round Robin</option>
+            </select>
+          </label>
+          <label>
+            <span>Weeks</span>
+            <input id="weeks" type="number" min="1" max="12" value="4">
+          </label>
+        </div>
+
+        <section class="card inset">
+          <div class="card-title-row">
+            <h3>Students</h3>
+            <button class="mini-btn" type="button" id="addStudentBtn">+ Add Student</button>
+          </div>
+          <p class="muted small">Reliability, callouts, preferred shift, and max weekly hours all feed the smart scoring engine.</p>
+          <div id="studentsContainer" class="student-stack"></div>
+        </section>
+
+        <section class="card inset" id="customShiftCard">
+          <div class="card-title-row">
+            <h3>Shift templates</h3>
+            <button class="mini-btn" type="button" id="addShiftBtn">+ Add Shift</button>
+          </div>
+          <div id="shiftTemplates" class="student-stack"></div>
+        </section>
+
+        <div class="cta-row">
+          <button id="generateBtn" class="primary-btn" type="button">Generate Smart Schedule</button>
+          <button id="resetBtn" class="ghost-btn" type="button">Reset</button>
+        </div>
+        <div id="flashBox" class="flash hidden"></div>
+      </aside>
+
+      <section class="panel glass results-panel">
+        <div class="panel-heading">
+          <h2>Results</h2>
+          <p>Coverage plans, ethical warnings, workload balance, and a clean manager view.</p>
+        </div>
+
+        <div class="stats-grid luxe-stats">
+          <article class="stat-card"><span class="label">Students</span><strong id="statStudents">0</strong></article>
+          <article class="stat-card"><span class="label">Primary Assignments</span><strong id="statAssignments">0</strong></article>
+          <article class="stat-card"><span class="label">Backup Assignments</span><strong id="statBackups">0</strong></article>
+          <article class="stat-card"><span class="label">Coverage Ready</span><strong id="statCoverage">0%</strong></article>
+          <article class="stat-card"><span class="label">Avg / Student</span><strong id="statAverage">0</strong></article>
+          <article class="stat-card"><span class="label">Fairness Spread</span><strong id="statSpread">0</strong></article>
+        </div>
+
+        <div class="dual-grid">
+          <section class="card inset">
+            <div class="card-title-row"><h3>Workload + risk</h3></div>
+            <div id="workloadBars" class="bars"></div>
+          </section>
+          <section class="card inset hidden" id="conflictBox">
+            <div class="card-title-row"><h3>Academic conflicts</h3></div>
+            <div id="conflictList" class="list-stack"></div>
+          </section>
+        </div>
+
+        <section class="card inset hidden" id="warningBox">
+          <div class="card-title-row"><h3>Ethical warnings</h3></div>
+          <div id="warningList" class="list-stack"></div>
+        </section>
+
+        <section class="card inset hidden" id="calloutBox">
+          <div class="card-title-row"><h3>Callout recovery plan</h3></div>
+          <div id="calloutList" class="list-stack"></div>
+        </section>
+
+        <div class="segmented" id="resultSwitch">
+          <button class="segment active" data-view="list" type="button">List View</button>
+          <button class="segment" data-view="calendar" type="button">Calendar View</button>
+        </div>
+
+        <div id="scheduleList" class="schedule-list empty-state">Generate a schedule to see the polished view.</div>
+
+        <section id="calendarPane" class="hidden">
+          <div class="calendar-toolbar">
+            <button id="prevWeekBtn" class="ghost-btn" type="button">Previous Week</button>
+            <strong id="calendarTitle">Week</strong>
+            <button id="nextWeekBtn" class="ghost-btn" type="button">Next Week</button>
+          </div>
+          <div id="calendarGrid" class="calendar-grid"></div>
+        </section>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    window.DEFAULT_SHIFT_TEMPLATES = {{ default_templates|tojson }};
+    window.DEFAULT_CUSTOM_CONFIG = {{ default_config|tojson }};
+    window.DEFAULT_STUDENTS = {{ default_students|tojson }};
+  </script>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
