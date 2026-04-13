@@ -3,4 +3,4 @@ __pycache__/
 *.pyc
 .env
 .DS_Store
-titan_scheduler_flask/scheduler_service.db
+scheduler_service.db

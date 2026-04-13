@@ -1,29 +1,29 @@
 # Titan Smart Scheduler
 
-Titan Smart Scheduler is a multi-page Flask platform for ethical student-worker scheduling.  
-It is built to feel like a real campus operations service: planning shifts, tracking history, reviewing analytics, evaluating ethics, and exporting schedules in manager-friendly formats.
+Titan Smart Scheduler is a multi-page Flask platform for ethical student-worker scheduling.
+It is designed to feel like a real campus operations product: planning shifts, reviewing staffing history, monitoring analytics, evaluating ethics, and exporting schedules in manager-friendly formats.
 
 ## Why This Project Stands Out
 - Ethical scheduling is the core, not an afterthought
-- Student commitments, fairness, backup coverage, and risk are all part of the planning model
+- Student commitments, fairness, backup coverage, and risk all influence planning
 - Every saved plan carries an ethics analysis record
 - Past plans are stored in a reviewable archive
-- Supervisors can export schedules as JSON or CSV
-- Users can bulk-fill the planning desk with a downloadable/uploadable planning template
-- The interface is multi-page, responsive, themed, and presentation-ready
+- Supervisors can export plans as JSON or CSV
+- Users can bulk-fill the planner with a downloadable/uploadable template
+- The UI is multi-page, responsive, themed, and presentation-ready
 
 ## Service Areas
 
 ### 1. Shift Planning Desk
-The scheduling workspace where managers:
+The main planning workspace where managers can:
 - choose a planning mode
 - define students and academic profiles
 - configure shift templates
 - generate staffing plans with backup support
-- import a completed JSON planning template instead of filling everything manually
+- import a completed JSON planning template instead of filling every field manually
 
 ### 2. Operations Dashboard
-The analytics workspace where users can review:
+The analytics workspace for:
 - fairness spread
 - alert and conflict trends
 - coverage readiness
@@ -100,7 +100,7 @@ A built-in FAQ page that explains:
 
 ## Project Structure
 ```text
-titan_scheduler_flask/
+.
 ├── app.py
 ├── requirements.txt
 ├── scheduler_service.db
@@ -143,7 +143,7 @@ titan_scheduler_flask/
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\python -m pip install -r requirements.txt
-.\.venv\Scripts\python .\titan_scheduler_flask\app.py
+.\.venv\Scripts\python .\app.py
 ```
 
 Then open:
@@ -153,7 +153,7 @@ Then open:
 You can skip activation entirely and call the venv Python directly:
 ```powershell
 .\.venv\Scripts\python -m pip install -r requirements.txt
-.\.venv\Scripts\python .\titan_scheduler_flask\app.py
+.\.venv\Scripts\python .\app.py
 ```
 
 ## Data Storage
@@ -171,7 +171,7 @@ You can skip activation entirely and call the venv Python directly:
 6. Generate the plan and review the results
 
 ## Why The Ethics Layer Matters
-This project is not just about making schedules.  
+This project is not just about making schedules.
 It is about showing that scheduling decisions can be:
 - transparent
 - reviewable

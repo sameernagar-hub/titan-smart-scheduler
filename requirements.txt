@@ -1,1 +1,1 @@
--r titan_scheduler_flask/requirements.txt
+Flask>=3.0,<4.0
