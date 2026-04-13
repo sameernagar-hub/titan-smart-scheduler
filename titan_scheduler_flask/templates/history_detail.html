@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}Run Detail | Titan Scheduler{% endblock %}
+{% block content %}
+<section class="page-intro glass">
+  <div class="section-head">
+    <h1>{{ detail.run.name }}</h1>
+    <p>{{ "Smart Custom" if detail.run.mode == "custom" else "Round Robin" }} plan stored on {{ detail.run.created_at[:10] }}.</p>
+  </div>
+  <div class="inline-badges">
+    <span class="badge soft">{{ detail.stats.total_assignments }} primary</span>
+    <span class="badge soft">{{ detail.stats.total_backup_assignments }} backup</span>
+    <span class="badge soft">{{ detail.stats.coverage_ready_percent }}% coverage ready</span>
+    <span class="badge soft">Ethics {{ detail.ethics.overall_score }}</span>
+  </div>
+  <div class="cta-row">
+    <a class="ghost-btn" href="{{ url_for('download_run_json', run_id=detail.run.id) }}">Download JSON</a>
+    <a class="ghost-btn" href="{{ url_for('download_run_csv', run_id=detail.run.id) }}">Download CSV</a>
+  </div>
+</section>
+
+<section class="analytics-grid">
+  <article class="glass chart-card">
+    <div class="section-head">
+      <h2>Warnings</h2>
+      <p>Operational caution flags from this specific run.</p>
+    </div>
+    <div class="list-stack">
+      {% for item in detail.warnings %}
+        <div class="list-item {{ 'danger-left' if item.severity == 'high' else 'warn-left' }}">
+          <strong>{{ item.student }}</strong> on {{ item.date }}<br>
+          {{ item.reason }}
+        </div>
+      {% else %}
+        <div class="list-item">No warnings recorded.</div>
+      {% endfor %}
+    </div>
+  </article>
+
+  <article class="glass chart-card">
+    <div class="section-head">
+      <h2>Callout Recovery</h2>
+      <p>Backup coverage captured for the stored run.</p>
+    </div>
+    <div class="list-stack">
+      {% for plan in detail.callout_plan %}
+        <div class="list-item">
+          <strong>{{ plan.shift_name }}</strong> on {{ plan.date }}<br>
+          Primary: {{ plan.primaries|join(', ') if plan.primaries else 'None' }}<br>
+          Backup: {{ plan.backups|join(', ') if plan.backups else 'None' }}
+        </div>
+      {% else %}
+        <div class="list-item">No recovery plans stored.</div>
+      {% endfor %}
+    </div>
+  </article>
+</section>
+
+<section class="glass table-card">
+  <div class="section-head">
+    <h2>Ethics Analysis Record</h2>
+    <p>{{ detail.ethics.narrative }}</p>
+  </div>
+  <div class="stats-band">
+    <article class="metric-tile"><span>Overall Score</span><strong>{{ detail.ethics.overall_score }}</strong></article>
+    <article class="metric-tile"><span>Overall Status</span><strong>{{ detail.ethics.overall_status }}</strong></article>
+    <article class="metric-tile"><span>Strong Alignment</span><strong>{{ detail.ethics.strong_count }}</strong></article>
+    <article class="metric-tile"><span>Needs Review</span><strong>{{ detail.ethics.needs_review_count }}</strong></article>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Theory</th>
+          <th>Score</th>
+          <th>Status</th>
+          <th>Interpretation</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in detail.ethics.theories %}
+          <tr>
+            <td>{{ item.theory }}</td>
+            <td>{{ item.score }}</td>
+            <td>{{ item.status }}</td>
+            <td>{{ item.summary }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="glass table-card">
+  <div class="section-head">
+    <h2>Assignments</h2>
+    <p>Full assignment list for this historical run.</p>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Shift</th>
+          <th>Student</th>
+          <th>Role</th>
+          <th>Time</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in detail.assignments %}
+          <tr>
+            <td>{{ item.date }}</td>
+            <td>{{ item.shift_name }}</td>
+            <td>{{ item.student }}</td>
+            <td>{{ item.role }}</td>
+            <td>{{ item.time }}</td>
+            <td>{{ item.conflict_reason if item.conflict else 'Clear' }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}FAQ | Titan Scheduler{% endblock %}
+{% block content %}
+<section class="page-intro glass">
+  <div class="section-head">
+    <h1>Manager Help Center</h1>
+    <p>Quick answers for managers, reviewers, and anyone learning what each workspace does.</p>
+  </div>
+</section>
+
+<section class="faq-stack">
+  {% for item in faq_items %}
+    <details class="glass faq-item" {% if loop.first %}open{% endif %}>
+      <summary>{{ item.question }}</summary>
+      <p>{{ item.answer }}</p>
+    </details>
+  {% endfor %}
+</section>
+{% endblock %}

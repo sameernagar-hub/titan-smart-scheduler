@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% block title %}Analytics | Titan Scheduler{% endblock %}
+{% block content %}
+<section class="page-intro glass">
+  <div class="section-head">
+    <div class="card-top">
+      <h1>Operations Dashboard</h1>
+      <details class="help-pop">
+        <summary aria-label="Explain analytics page">?</summary>
+        <div>This dashboard rolls up recent planning activity so supervisors can talk about staffing patterns, pressure points, and coverage readiness with confidence.</div>
+      </details>
+    </div>
+    <p>Use historical plans to track alerts, compare coverage performance, and spot where the team may be leaning too hard on the same people.</p>
+  </div>
+</section>
+
+<section class="stats-band">
+  <article class="metric-tile"><span>Plans Logged</span><strong>{{ analytics.summary.total_runs }}</strong></article>
+  <article class="metric-tile"><span>Primary Shifts</span><strong>{{ analytics.summary.primary_assignments }}</strong></article>
+  <article class="metric-tile"><span>Backup Slots</span><strong>{{ analytics.summary.backups }}</strong></article>
+  <article class="metric-tile"><span>Average Readiness</span><strong>{{ analytics.summary.avg_coverage }}%</strong></article>
+</section>
+
+<section class="analytics-grid">
+  <article class="glass chart-card">
+    <div class="section-head">
+      <h2>Alert Trend</h2>
+      <p>Recent plans showing alert and conflict volume.</p>
+    </div>
+    {% set ns = namespace(max_value=1) %}
+    {% for item in analytics.warning_trend %}
+      {% if item.warnings > ns.max_value %}{% set ns.max_value = item.warnings %}{% endif %}
+      {% if item.conflicts > ns.max_value %}{% set ns.max_value = item.conflicts %}{% endif %}
+    {% endfor %}
+    <div class="mini-chart">
+      {% for item in analytics.warning_trend %}
+        <div class="mini-chart-col">
+          <div class="mini-chart-bars">
+            <span class="bar-visual warn" style="height: {{ (item.warnings / ns.max_value) * 100 if ns.max_value else 0 }}%"></span>
+            <span class="bar-visual danger" style="height: {{ (item.conflicts / ns.max_value) * 100 if ns.max_value else 0 }}%"></span>
+          </div>
+          <strong>{{ item.label }}</strong>
+          <small>{{ item.warnings }} alerts / {{ item.conflicts }} conflicts</small>
+        </div>
+      {% else %}
+        <p>No trend data yet.</p>
+      {% endfor %}
+    </div>
+  </article>
+
+  <article class="glass chart-card">
+    <div class="section-head">
+      <h2>Planning Mix</h2>
+      <p>How teams are using structured planning versus rotation-based scheduling.</p>
+    </div>
+    {% set mix_total = analytics.service_mix | sum(attribute='value') %}
+    <div class="mix-list">
+      {% for item in analytics.service_mix %}
+        <div class="mix-row">
+          <div class="mix-copy">
+            <strong>{{ item.name }}</strong>
+            <small>{{ item.value }} plan{% if item.value != 1 %}s{% endif %}</small>
+          </div>
+          <div class="mix-meter">
+            <span style="width: {{ (item.value / mix_total) * 100 if mix_total else 0 }}%"></span>
+          </div>
+        </div>
+      {% else %}
+        <p>No service usage yet.</p>
+      {% endfor %}
+    </div>
+  </article>
+</section>
+
+<section class="analytics-grid">
+  <article class="glass chart-card">
+    <div class="section-head">
+      <h2>Coverage Readiness</h2>
+      <p>Visual comparison of backup readiness across recent plans.</p>
+    </div>
+    <div class="coverage-chart">
+      {% for run in analytics.recent_runs %}
+        <div class="coverage-row">
+          <strong>{{ run.name }}</strong>
+          <div class="coverage-meter"><span style="width: {{ run.coverage_ready_percent }}%"></span></div>
+          <small>{{ run.coverage_ready_percent }}%</small>
+        </div>
+      {% else %}
+        <p>No readiness data yet.</p>
+      {% endfor %}
+    </div>
+  </article>
+
+  <article class="glass chart-card">
+    <div class="section-head">
+      <h2>Assignment Load</h2>
+      <p>Recent plans sized by total primary staffing volume.</p>
+    </div>
+    {% set load_max = analytics.recent_runs | map(attribute='assignment_count') | max if analytics.recent_runs else 1 %}
+    <div class="load-chart">
+      {% for run in analytics.recent_runs %}
+        <div class="load-row">
+          <strong>{{ run.name }}</strong>
+          <div class="load-meter"><span style="width: {{ (run.assignment_count / load_max) * 100 if load_max else 0 }}%"></span></div>
+          <small>{{ run.assignment_count }}</small>
+        </div>
+      {% else %}
+        <p>No staffing volume data yet.</p>
+      {% endfor %}
+    </div>
+  </article>
+</section>
+
+<section class="glass table-card">
+  <div class="section-head">
+    <h2>Recent Plans</h2>
+    <p>Recent staffing plans and the operational profile attached to each one.</p>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Run</th>
+          <th>Mode</th>
+          <th>Assignments</th>
+          <th>Backups</th>
+          <th>Warnings</th>
+          <th>Coverage</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for run in analytics.recent_runs %}
+          <tr>
+            <td><a href="{{ url_for('history_detail_page', run_id=run.id) }}">{{ run.name }}</a></td>
+            <td>{{ "Smart Custom" if run.mode == "custom" else "Round Robin" }}</td>
+            <td>{{ run.assignment_count }}</td>
+            <td>{{ run.backup_count }}</td>
+            <td>{{ run.warning_count }}</td>
+            <td>{{ run.coverage_ready_percent }}%</td>
+          </tr>
+        {% else %}
+          <tr><td colspan="6">No runs stored yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

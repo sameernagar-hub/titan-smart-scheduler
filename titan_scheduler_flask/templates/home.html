@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Titan Scheduler Service{% endblock %}
+{% block content %}
+<section class="hero-panel glass">
+  <div>
+    <p class="eyebrow">Campus Operations Workspace</p>
+    <h1>Coordinate student staffing like a real coverage desk.</h1>
+    <p class="lede">Build shift plans, track backup coverage, review earlier assignments, and keep leadership-facing reporting in one place without losing the day-to-day practicality managers need.</p>
+    <div class="cta-row">
+      <a class="primary-btn" href="{{ url_for('scheduler_page') }}">Open Planning Desk</a>
+      <a class="ghost-btn" href="{{ url_for('history_page') }}">View Coverage Archive</a>
+    </div>
+  </div>
+  <div class="hero-metrics">
+    <article class="metric-tile">
+      <span>Plans On File</span>
+      <strong>{{ analytics.summary.total_runs }}</strong>
+    </article>
+    <article class="metric-tile">
+      <span>Average Backup Readiness</span>
+      <strong>{{ analytics.summary.avg_coverage }}%</strong>
+    </article>
+    <article class="metric-tile">
+      <span>Alerts Logged</span>
+      <strong>{{ analytics.summary.warning_total }}</strong>
+    </article>
+  </div>
+</section>
+
+<section class="glass activity-stage">
+  <div class="section-head">
+    <h2>Live Activity Board</h2>
+    <p>A rotating view of recent planning activity and operational highlights.</p>
+  </div>
+  <div class="carousel" id="homeCarousel">
+    {% for item in carousel_items %}
+      <article class="carousel-slide {% if loop.first %}active{% endif %}">
+        <span class="eyebrow">{{ item.eyebrow }}</span>
+        <h3>{{ item.title }}</h3>
+        <p>{{ item.copy }}</p>
+        <a class="text-link" href="{{ item.href }}">{{ item.cta }}</a>
+      </article>
+    {% endfor %}
+  </div>
+  <div class="carousel-dots" id="homeCarouselDots">
+    {% for item in carousel_items %}
+      <button type="button" class="carousel-dot {% if loop.first %}active{% endif %}" aria-label="Show slide {{ loop.index }}" data-index="{{ loop.index0 }}"></button>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="content-grid">
+  <div class="section-head">
+    <h2>Core Workspaces</h2>
+    <p>Each area is shaped around a real operational task instead of a generic feature list.</p>
+  </div>
+  <div class="card-grid">
+    {% for service in service_cards %}
+      <article class="feature-card glass">
+        <div class="card-top">
+          <h3>{{ service.title }}</h3>
+          <details class="help-pop">
+            <summary aria-label="Explain {{ service.title }}">?</summary>
+            <div>{{ service.help }}</div>
+          </details>
+        </div>
+        <p>{{ service.summary }}</p>
+        <a class="text-link" href="{{ service.href }}">Open workspace</a>
+      </article>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="showcase-grid">
+  <article class="glass spotlight-card">
+    <div class="section-head">
+      <h2>What Managers Actually Get</h2>
+      <p>Tools for planning, reporting, and explaining staffing choices after the schedule is made.</p>
+    </div>
+    <ul class="plain-list">
+      <li>A scheduling desk that balances hours, classes, and shift preferences.</li>
+      <li>A stored archive of past plans for handoff, review, and presentation.</li>
+      <li>A reporting dashboard for fairness, alerts, and backup readiness.</li>
+      <li>A built-in help center so every metric and service has context.</li>
+    </ul>
+  </article>
+  <article class="glass spotlight-card">
+    <div class="section-head">
+      <h2>Highlighted Plan</h2>
+      <p>Seeded data keeps the experience feeling active from the first launch.</p>
+    </div>
+    {% if featured_run %}
+      <div class="run-preview">
+        <strong>{{ featured_run.name }}</strong>
+        <span>{{ featured_run.assignment_count }} primary slots / {{ featured_run.backup_count }} backup slots</span>
+        <span>{{ featured_run.coverage_ready_percent }}% backup readiness</span>
+        <a class="text-link" href="{{ url_for('history_detail_page', run_id=featured_run.id) }}">Open plan details</a>
+      </div>
+    {% else %}
+      <p>No planning history is stored yet.</p>
+    {% endif %}
+  </article>
+</section>
+{% endblock %}

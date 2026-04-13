@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}History | Titan Scheduler{% endblock %}
+{% block content %}
+<section class="page-intro glass">
+  <div class="section-head">
+    <div class="card-top">
+    <h1>Coverage Archive</h1>
+      <details class="help-pop">
+        <summary aria-label="Explain assignment history">?</summary>
+        <div>Every generated staffing plan is stored here so teams can review outcomes, revisit staffing evidence, and compare previous plans.</div>
+      </details>
+    </div>
+    <p>Use this page to inspect previous plans and the seeded examples loaded on first launch.</p>
+  </div>
+</section>
+
+<section class="stats-band">
+  <article class="metric-tile"><span>Total Runs</span><strong>{{ history_summary.total_runs }}</strong></article>
+  <article class="metric-tile"><span>Primary Assignments</span><strong>{{ history_summary.primary_assignments }}</strong></article>
+  <article class="metric-tile"><span>Backups</span><strong>{{ history_summary.backups }}</strong></article>
+  <article class="metric-tile"><span>Warnings Logged</span><strong>{{ history_summary.warning_total }}</strong></article>
+</section>
+
+<section class="glass table-card">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Run Name</th>
+          <th>Date</th>
+          <th>Mode</th>
+          <th>Assignments</th>
+          <th>Backups</th>
+          <th>Warnings</th>
+          <th>Coverage</th>
+          <th>Ethics</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for run in history_runs %}
+          <tr>
+            <td>{{ run.name }}</td>
+            <td>{{ run.created_at[:10] }}</td>
+            <td>{{ "Smart Custom" if run.mode == "custom" else "Round Robin" }}</td>
+            <td>{{ run.assignment_count }}</td>
+            <td>{{ run.backup_count }}</td>
+            <td>{{ run.warning_count }}</td>
+            <td>{{ run.coverage_ready_percent }}%</td>
+            <td>{{ run.ethics_overall_status }} ({{ run.ethics_overall_score }})</td>
+            <td><a href="{{ url_for('history_detail_page', run_id=run.id) }}">View</a></td>
+          </tr>
+        {% else %}
+          <tr><td colspan="9">No history yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

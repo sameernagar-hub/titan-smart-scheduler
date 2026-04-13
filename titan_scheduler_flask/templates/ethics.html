@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Ethics | Titan Scheduler{% endblock %}
+{% block content %}
+<section class="page-intro glass">
+  <div class="section-head">
+    <div class="card-top">
+      <h1>Ethics Review Board</h1>
+      <details class="help-pop">
+        <summary aria-label="Explain ethics page">?</summary>
+        <div>This page evaluates saved staffing plans against the ethical frameworks named in the project brief so the scheduling process can be defended as well as described.</div>
+      </details>
+    </div>
+    <p>Each saved plan receives an ethics record showing how well the scheduling logic protects students, respects consistent rules, and preserves reasonable operational coverage.</p>
+  </div>
+</section>
+
+<section class="stats-band">
+  <article class="metric-tile"><span>Average Ethics Score</span><strong>{{ ethics.overall_average }}</strong></article>
+  <article class="metric-tile"><span>Overall Rating</span><strong>{{ ethics.overall_status }}</strong></article>
+  <article class="metric-tile"><span>Plans Reviewed</span><strong>{{ ethics.runs|length }}</strong></article>
+  <article class="metric-tile"><span>Theories Tracked</span><strong>{{ theories|length }}</strong></article>
+</section>
+
+<section class="analytics-grid">
+  <article class="glass chart-card">
+    <div class="section-head">
+      <h2>Theory Snapshot</h2>
+      <p>Average alignment score across all saved plans.</p>
+    </div>
+    <div class="coverage-chart">
+      {% for item in ethics.theory_summary %}
+        <div class="coverage-row">
+          <strong>{{ item.theory }}</strong>
+          <div class="coverage-meter"><span style="width: {{ item.average_score }}%"></span></div>
+          <small>{{ item.average_score }} / 100</small>
+        </div>
+      {% endfor %}
+    </div>
+  </article>
+
+  <article class="glass chart-card">
+    <div class="section-head">
+      <h2>How To Read This</h2>
+      <p>The ethics record is informative rather than absolute.</p>
+    </div>
+    <div class="list-stack">
+      <div class="list-item"><code>Strong alignment</code> means the plan’s metrics and constraints strongly support that theory.</div>
+      <div class="list-item"><code>Conditional alignment</code> means the plan generally supports the theory but still needs context or human review.</div>
+      <div class="list-item"><code>Needs review</code> means conflicts, overload, weak coverage, or missing context make the ethical case harder to defend.</div>
+    </div>
+  </article>
+</section>
+
+<section class="glass table-card">
+  <div class="section-head">
+    <h2>Reviewed Plans</h2>
+    <p>Each plan keeps its own ethics record in the archive.</p>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Plan</th>
+          <th>Date</th>
+          <th>Overall Score</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for run in ethics.runs %}
+          <tr>
+            <td>{{ run.name }}</td>
+            <td>{{ run.created_at[:10] }}</td>
+            <td>{{ run.overall_score }}</td>
+            <td>{{ run.overall_status }}</td>
+            <td><a href="{{ url_for('history_detail_page', run_id=run.id) }}">Open ethics record</a></td>
+          </tr>
+        {% else %}
+          <tr><td colspan="5">No reviewed plans yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

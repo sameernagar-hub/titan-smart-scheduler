@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Services | Titan Scheduler{% endblock %}
+{% block content %}
+<section class="page-intro glass">
+  <div class="section-head">
+    <h1>Operations Services</h1>
+    <p>These workspaces mirror the real tasks supervisors handle: planning coverage, reviewing earlier decisions, monitoring staffing health, and answering routine questions.</p>
+  </div>
+</section>
+
+<section class="card-grid">
+  {% for service in service_cards %}
+    <article class="feature-card glass">
+      <div class="card-top">
+        <h2>{{ service.title }}</h2>
+        <details class="help-pop">
+          <summary aria-label="Explain {{ service.title }}">?</summary>
+          <div>{{ service.help }}</div>
+        </details>
+      </div>
+      <p>{{ service.summary }}</p>
+      <a class="primary-btn small-btn" href="{{ service.href }}">Open {{ service.title }}</a>
+    </article>
+  {% endfor %}
+</section>
+
+<section class="stats-band">
+  <article class="metric-tile">
+    <span>Plans Tracked</span>
+    <strong>{{ analytics.summary.total_runs }}</strong>
+  </article>
+  <article class="metric-tile">
+    <span>Shifts Logged</span>
+    <strong>{{ analytics.summary.primary_assignments }}</strong>
+  </article>
+  <article class="metric-tile">
+    <span>Average Coverage Balance</span>
+    <strong>{{ analytics.summary.avg_fairness }}</strong>
+  </article>
+</section>
+{% endblock %}

@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% block title %}Scheduler | Titan Scheduler{% endblock %}
+{% block content %}
+<section class="page-intro glass">
+  <div class="section-head">
+    <h1>Shift Planning Desk</h1>
+    <p>Build a staffing plan, save it automatically, and review the result in list, calendar, and backup-coverage views.</p>
+  </div>
+  <div class="inline-badges">
+    <span class="badge soft">Auto-saves to history</span>
+    <span class="badge soft">Accessibility-focused</span>
+    <span class="badge soft">Manager-ready workflow</span>
+  </div>
+</section>
+
+<section class="workspace">
+  <aside class="panel glass form-panel">
+    <div class="panel-heading">
+      <div class="card-top">
+        <h2>Build a staffing plan</h2>
+        <details class="help-pop">
+          <summary aria-label="Explain scheduler workspace">?</summary>
+          <div>This workspace creates a new staffing plan, stores it in the archive, and refreshes reporting automatically.</div>
+        </details>
+      </div>
+      <p>Choose a planning mode, describe the student context, and generate a schedule with backup support.</p>
+    </div>
+
+    <label>
+      <span>Plan name</span>
+      <input id="scheduleName" type="text" placeholder="Ex: Week 4 bookstore floor coverage">
+    </label>
+
+    <div class="segmented" id="modeSwitch">
+      <button class="segment active" data-mode="round_robin" type="button">Round Robin</button>
+      <button class="segment" data-mode="custom" type="button">Smart Custom</button>
+    </div>
+
+    <div class="grid-two compact-gap">
+      <label>
+        <span>Algorithm <details class="help-inline"><summary>?</summary><div>Round Robin algorithms rotate pairings differently but both spread opportunities across the group.</div></details></span>
+        <select id="algorithm">
+          <option value="circle" selected>Circle Method</option>
+          <option value="standard">Standard Round Robin</option>
+        </select>
+      </label>
+      <label>
+        <span>Weeks <details class="help-inline"><summary>?</summary><div>Custom mode uses this to build a multi-week staffing plan and save the full run in history.</div></details></span>
+        <input id="weeks" type="number" min="1" max="12" value="4">
+      </label>
+    </div>
+
+    <section class="card inset">
+      <div class="card-title-row">
+        <h3>Bulk Planning File</h3>
+        <details class="help-pop">
+          <summary aria-label="Explain bulk planning file">?</summary>
+          <div>Download a JSON planning template, fill it out offline, then upload it here to populate the scheduling form automatically.</div>
+        </details>
+      </div>
+      <p class="muted small">This is useful when you would rather edit one file than fill every field manually on the page.</p>
+      <div class="cta-row">
+        <a class="ghost-btn" href="/api/input-template">Download Template</a>
+        <label class="ghost-btn upload-btn" for="templateUpload">Upload Filled Template</label>
+        <input id="templateUpload" type="file" accept=".json,application/json" class="hidden">
+      </div>
+    </section>
+
+    <section class="card inset">
+      <div class="card-title-row">
+        <h3>Students</h3>
+        <button class="mini-btn" type="button" id="addStudentBtn">Add Student</button>
+      </div>
+      <p class="muted small">Every field affects risk scoring, fairness, and backup planning.</p>
+      <div id="studentsContainer" class="student-stack"></div>
+    </section>
+
+    <section class="card inset" id="customShiftCard">
+      <div class="card-title-row">
+        <h3>Shift templates</h3>
+        <button class="mini-btn" type="button" id="addShiftBtn">Add Shift</button>
+      </div>
+      <p class="muted small">Define reusable shifts, then map which days and how often they occur.</p>
+      <div id="shiftTemplates" class="student-stack"></div>
+    </section>
+
+    <div class="cta-row">
+      <button id="generateBtn" class="primary-btn" type="button">Generate Plan</button>
+      <button id="resetBtn" class="ghost-btn" type="button">Reset</button>
+    </div>
+    <div id="flashBox" class="flash hidden" role="status" aria-live="polite"></div>
+  </aside>
+
+  <section class="panel glass results-panel">
+    <div class="panel-heading">
+      <div class="card-top">
+        <h2>Results</h2>
+        <details class="help-pop">
+          <summary aria-label="Explain results area">?</summary>
+          <div>Results show the latest generated plan only. After generation, the same plan is also available in the archive.</div>
+        </details>
+      </div>
+      <p>Coverage plans, staffing alerts, workload balance, and a clean manager view.</p>
+    </div>
+
+    <div class="stats-grid luxe-stats">
+      <article class="stat-card"><span class="label">Students</span><strong id="statStudents">0</strong></article>
+      <article class="stat-card"><span class="label">Primary Assignments</span><strong id="statAssignments">0</strong></article>
+      <article class="stat-card"><span class="label">Backup Assignments</span><strong id="statBackups">0</strong></article>
+      <article class="stat-card"><span class="label">Coverage Ready</span><strong id="statCoverage">0%</strong></article>
+      <article class="stat-card"><span class="label">Avg / Student</span><strong id="statAverage">0</strong></article>
+      <article class="stat-card"><span class="label">Fairness Spread</span><strong id="statSpread">0</strong></article>
+    </div>
+
+    <div id="historyLinkBox" class="history-banner hidden"></div>
+
+    <div class="dual-grid">
+      <section class="card inset">
+        <div class="card-title-row"><h3>Workload and risk</h3></div>
+        <div id="workloadBars" class="bars"></div>
+      </section>
+      <section class="card inset hidden" id="conflictBox">
+        <div class="card-title-row"><h3>Academic conflicts</h3></div>
+        <div id="conflictList" class="list-stack"></div>
+      </section>
+    </div>
+
+    <section class="card inset hidden" id="warningBox">
+      <div class="card-title-row"><h3>Ethical warnings</h3></div>
+      <div id="warningList" class="list-stack"></div>
+    </section>
+
+    <section class="card inset hidden" id="calloutBox">
+      <div class="card-title-row"><h3>Callout recovery plan</h3></div>
+      <div id="calloutList" class="list-stack"></div>
+    </section>
+
+    <div class="segmented" id="resultSwitch">
+      <button class="segment active" data-view="list" type="button">List View</button>
+      <button class="segment" data-view="calendar" type="button">Calendar View</button>
+    </div>
+
+    <div id="scheduleList" class="schedule-list empty-state">Generate a staffing plan to see the results.</div>
+
+    <section id="calendarPane" class="hidden">
+      <div class="calendar-toolbar">
+        <button id="prevWeekBtn" class="ghost-btn" type="button">Previous Week</button>
+        <strong id="calendarTitle">Week</strong>
+        <button id="nextWeekBtn" class="ghost-btn" type="button">Next Week</button>
+      </div>
+      <div id="calendarGrid" class="calendar-grid"></div>
+    </section>
+  </section>
+</section>
+{% endblock %}
+{% block page_data %}
+<script>
+  window.DEFAULT_SHIFT_TEMPLATES = {{ default_templates|tojson }};
+  window.DEFAULT_CUSTOM_CONFIG = {{ default_config|tojson }};
+  window.DEFAULT_STUDENTS = {{ default_students|tojson }};
+</script>
+{% endblock %}
