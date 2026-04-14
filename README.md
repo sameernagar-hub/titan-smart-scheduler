@@ -1,37 +1,139 @@
 # Titan Smart Scheduler
 
-Titan Smart Scheduler is a multi-page Flask platform for ethical student-worker scheduling.
-It is designed to feel like a real campus operations product: planning shifts, reviewing staffing history, monitoring analytics, evaluating ethics, and exporting schedules in manager-friendly formats.
+Adaptive ethical scheduling platform for student-worker operations, featuring multi-page planning, archived run history, ethics evaluation, analytics, bulk template import, and downloadable schedule exports.
 
-## Why This Project Stands Out
-- Ethical scheduling is the core, not an afterthought
-- Student commitments, fairness, backup coverage, and risk all influence planning
-- Every saved plan carries an ethics analysis record
-- Past plans are stored in a reviewable archive
-- Supervisors can export plans as JSON or CSV
-- Users can bulk-fill the planner with a downloadable/uploadable template
-- The UI is multi-page, responsive, themed, and presentation-ready
+---
 
-## Service Areas
+## Why This Project Pops
 
-### 1. Shift Planning Desk
-The main planning workspace where managers can:
-- choose a planning mode
-- define students and academic profiles
-- configure shift templates
-- generate staffing plans with backup support
-- import a completed JSON planning template instead of filling every field manually
+This is not just a shift generator.
+It is a working service-style scheduling application that lets you:
 
-### 2. Operations Dashboard
-The analytics workspace for:
-- fairness spread
-- alert and conflict trends
-- coverage readiness
-- planning mix
-- assignment load across recent plans
+- build staffing plans around student class and exam commitments
+- balance workload, reliability, preferences, and backup coverage
+- save and reopen completed plans in a dedicated archive
+- review fairness, readiness, and alert trends in a separate analytics service
+- evaluate saved plans against major ethical frameworks in a dedicated ethics service
+- import a prepared planning template instead of filling every field manually
+- export completed plans as JSON or CSV for downstream use
 
-### 3. Ethics Review Board
-The ethics workspace where saved plans are evaluated against:
+---
+
+## Quick Start
+
+### 1. Create a virtual environment
+
+#### Windows PowerShell
+
+```powershell
+python -m venv .venv
+```
+
+#### macOS / Linux
+
+```bash
+python3 -m venv .venv
+```
+
+### 2. Install dependencies
+
+```powershell
+.\.venv\Scripts\python -m pip install -r requirements.txt
+```
+
+### 3. Start the app
+
+```powershell
+.\.venv\Scripts\python .\app.py
+```
+
+### 4. Open the web app
+
+```text
+http://127.0.0.1:5000/
+```
+
+> Tip: the app opens into a multi-page product experience with separate spaces for planning, analytics, ethics, history, and help.
+
+---
+
+## Table Of Contents
+
+- Features
+- App Services
+- Typical Workflow
+- Ethics Layer
+- Bulk Planning Template
+- Exports
+- Project Structure
+- Setup And Installation
+- Data Storage
+- Author
+
+---
+
+## Features
+
+### Scheduling Engine
+
+- class conflict detection
+- exam conflict detection
+- weekly hour-limit protection
+- reliability-aware staffing
+- shift preference awareness
+- backup coverage planning
+- overload and fatigue warnings
+
+### Product Workflow
+
+- multi-page service layout
+- saved plan archive
+- dedicated run detail pages
+- inline help markers across controls and metrics
+- uploadable planner template for bulk input
+- JSON and CSV exports for completed plans
+
+### Review And Reporting
+
+- workload and risk summaries
+- fairness and coverage metrics
+- alert and conflict trend views
+- ethics scoring and archived ethics records
+- seeded example runs for a presentation-ready first launch
+
+---
+
+## App Services
+
+The platform is organized as separate service areas so each workflow has its own space.
+
+| Service | Purpose | Main Output |
+|---|---|---|
+| `Home` | Presents the platform, activity board, and service entry points | Overview + recent activity |
+| `Shift Planning Desk` | Builds a new staffing plan | New saved plan |
+| `Operations Dashboard` | Reviews operational metrics across saved plans | Coverage, fairness, and alert trends |
+| `Ethics Review Board` | Reviews plans through ethical theory lenses | Ethics scores + theory-by-theory analysis |
+| `Coverage Archive` | Lists previous saved plans | Plan history |
+| `Plan Details` | Opens one archived plan | Staffing detail, exports, ethics record |
+| `Manager Help Center` | Explains services, metrics, and workflow | In-app documentation |
+
+---
+
+## Typical Workflow
+
+1. Open `Shift Planning Desk` to define students, shift templates, and planning settings.
+2. Generate a staffing plan with backup coverage and conflict-aware assignment logic.
+3. Review the live results area for assignments, warnings, callout recovery, and workload balance.
+4. Open the saved record in `Coverage Archive`.
+5. Review the same plan in `Operations Dashboard` and `Ethics Review Board` for reporting.
+6. Download the plan as JSON or CSV when you need to share or reuse it.
+
+---
+
+## Ethics Layer
+
+This project is framed as an ethics-focused scheduling platform, so every saved plan can be evaluated against:
+
 - Subjective Relativism
 - Cultural Relativism
 - Divine Command Theory
@@ -42,158 +144,154 @@ The ethics workspace where saved plans are evaluated against:
 - Social Contract Theory
 - Virtue Ethics
 
-Each saved plan gets an ethics score, theory-by-theory status, and a narrative interpretation.
+Each archived plan stores:
 
-### 4. Coverage Archive
-The history workspace where previous plans are stored with:
-- staffing outputs
-- warnings and conflicts
-- callout recovery plans
-- ethics analysis records
-- export links for JSON and CSV
+- an overall ethics score
+- an overall ethics status
+- theory-by-theory scores
+- theory-by-theory interpretation notes
+- an ethics narrative explaining what the system is checking
 
-### 5. Manager Help Center
-A built-in FAQ page that explains:
-- what the services do
-- how metrics should be interpreted
-- what the ethical warnings mean
-- how the ethics review should be read
+This makes the app stronger for:
 
-## Key Features
+- ethics coursework
+- fairness discussions
+- portfolio demonstrations
+- judge presentations
+- design reviews around responsible staffing systems
 
-### Ethical Planning Logic
-- class conflict detection
-- exam conflict detection
-- weekly hour-limit protection
-- shift preference awareness
-- reliability-aware selection
-- backup coverage planning
-- overload and fatigue warnings
+---
 
-### History and Traceability
-- every generated plan is saved automatically
-- previous plans are reviewable in the archive
-- preloaded example plans are inserted on first launch
-- ethics records are stored with each plan
+## Bulk Planning Template
 
-### Import / Export Workflow
-- download a planning template from the Shift Planning Desk
-- fill the template offline as JSON
-- upload the file back into the scheduler to auto-populate the form
-- export saved plans as JSON or CSV
+The planner includes a bulk input workflow so users do not have to fill every field manually.
 
-### Experience and Presentation
-- multi-page product layout
-- animated landing page with a rotating activity board
-- multiple visual themes
-- responsive layouts for desktop and mobile
-- hover feedback and motion for a more alive interface
-- contextual `?` help affordances across the platform
+### Supported flow
 
-## Tech Stack
-- Python
-- Flask
-- SQLite
-- HTML / Jinja templates
-- CSS
-- Vanilla JavaScript
+1. Download a fillable planner template from the `Shift Planning Desk`
+2. Edit the JSON file offline
+3. Upload the completed file back into the app
+4. Let the scheduler auto-populate the planning form
+5. Generate and save the plan normally
+
+### Template includes
+
+- plan name
+- planning mode
+- algorithm
+- week count
+- student roster
+- shift templates
+- custom schedule configuration
+
+---
+
+## Exports
+
+Saved plans can be exported as:
+
+- `JSON` for structured downstream use
+- `CSV` for spreadsheet or calendar-oriented workflows
+
+Available endpoints:
+
+- `GET /history/<run_id>/download/json`
+- `GET /history/<run_id>/download/csv`
+
+Bulk-input template endpoints:
+
+- `GET /api/input-template`
+- `POST /api/import-template`
+
+---
 
 ## Project Structure
+
 ```text
 .
-├── app.py
-├── requirements.txt
-├── scheduler_service.db
-├── templates/
-│   ├── base.html
-│   ├── home.html
-│   ├── services.html
-│   ├── scheduler.html
-│   ├── analytics.html
-│   ├── ethics.html
-│   ├── history.html
-│   ├── history_detail.html
-│   └── faq.html
-└── static/
-    ├── css/style.css
-    └── js/app.js
+|-- app.py
+|-- README.md
+|-- LICENSE
+|-- requirements.txt
+|-- templates/
+|   |-- base.html
+|   |-- home.html
+|   |-- services.html
+|   |-- scheduler.html
+|   |-- analytics.html
+|   |-- ethics.html
+|   |-- history.html
+|   |-- history_detail.html
+|   `-- faq.html
+`-- static/
+    |-- css/
+    |   `-- style.css
+    `-- js/
+        `-- app.js
 ```
 
-## API and Workflow Endpoints
+### Key Files
 
-### Scheduling
-- `POST /api/generate`
-  Generates a staffing plan, stores it in SQLite, creates ethics analysis, and returns results plus archive/export URLs.
+- `app.py` Flask routes, scheduling logic, SQLite persistence, ethics analysis, exports, and template import/export APIs
+- `templates/` multi-page HTML templates for each service area
+- `static/css/style.css` design system, themes, responsiveness, and motion
+- `static/js/app.js` theme behavior, homepage activity carousel, scheduler interactions, and template import flow
 
-### Bulk Input
-- `GET /api/input-template`
-  Downloads a fillable planner template in JSON format.
-- `POST /api/import-template`
-  Validates and normalizes an uploaded planning template so it can populate the scheduler form.
+---
 
-### Saved Plan Exports
-- `GET /history/<run_id>/download/json`
-  Downloads a saved plan as JSON.
-- `GET /history/<run_id>/download/csv`
-  Downloads a saved plan as CSV.
+## Setup And Installation
 
-## How To Run
+### Windows PowerShell
 
-### From the repo root
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\python -m pip install -r requirements.txt
 .\.venv\Scripts\python .\app.py
 ```
 
-Then open:
-- `http://127.0.0.1:5000`
+### If PowerShell blocks activation scripts
 
-### If PowerShell blocks activation
-You can skip activation entirely and call the venv Python directly:
+You can skip activation entirely and run the virtual environment interpreter directly:
+
 ```powershell
 .\.venv\Scripts\python -m pip install -r requirements.txt
 .\.venv\Scripts\python .\app.py
 ```
 
+---
+
 ## Data Storage
+
 - SQLite database file: `scheduler_service.db`
-- Generated plans are stored automatically
-- Ethics analysis records are stored with each plan
-- Preloaded sample plans are inserted on first startup
+- generated plans are stored automatically
+- ethics records are stored with each plan
+- preloaded sample plans are inserted on first startup
 
-## How To Use The Planner Template
-1. Open the `Shift Planning Desk`
-2. Click `Download Template`
-3. Edit the JSON file with your plan name, students, mode, shifts, and schedule configuration
-4. Click `Upload Filled Template`
-5. The scheduler form will populate automatically
-6. Generate the plan and review the results
+---
 
-## Why The Ethics Layer Matters
-This project is not just about making schedules.
-It is about showing that scheduling decisions can be:
-- transparent
-- reviewable
-- explainable
-- fairer to student workers
-- aligned with ethical reasoning frameworks
+## Technical Notes
 
-The ethics page and ethics records in history make the platform stronger for:
-- class projects
-- presentations
-- demos
-- design reviews
-- discussions about fairness in labor scheduling systems
+- Built with Flask and SQLite for a lightweight full-stack setup
+- Designed as a service platform rather than a single one-page utility
+- Uses Jinja templates plus vanilla JavaScript for the UI layer
+- Includes seeded history so the app is not empty on first launch
+- Keeps ethics evaluation tied directly to archived operational decisions
+
+---
 
 ## Author
+
 **Sameer Nagar**
 
-This project was authored by Sameer Nagar and presented as an ethics-focused scheduling platform that combines operational planning, reporting, and ethical analysis in one cohesive web application.
+Titan Smart Scheduler was authored by Sameer Nagar as an ethics-focused scheduling platform that combines operational planning, reporting, archival traceability, and theory-based ethical review in one cohesive web application.
+
+---
 
 ## Final Notes
-Titan Smart Scheduler is designed to be both functional and presentable:
+
+Titan Smart Scheduler is designed to be:
+
 - strong enough to demo as a software product
-- structured enough to discuss as a systems project
-- ethical enough to support an academic ethics framing
-- polished enough to serve as a strong GitHub portfolio piece
+- structured enough to present as a systems project
+- thoughtful enough to support an ethics-centered academic framing
+- polished enough to serve as a standout GitHub portfolio piece
