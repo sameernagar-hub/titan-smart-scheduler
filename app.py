@@ -1426,7 +1426,7 @@ def home() -> str:
             {
                 "eyebrow": "Recent Activity",
                 "title": run["name"],
-                "copy": f"{run['assignment_count']} primary assignments, {run['backup_count']} backups, {run['coverage_ready_percent']}% coverage ready.",
+                "description": f"{run['assignment_count']} primary assignments, {run['backup_count']} backups, {run['coverage_ready_percent']}% coverage ready.",
                 "href": f"/history/{run['id']}",
                 "cta": "Open run",
             }
@@ -1436,7 +1436,7 @@ def home() -> str:
             {
                 "eyebrow": "Live Workspace",
                 "title": "Weekly floor coverage planning",
-                "copy": "Create manager-ready schedules with backup coverage and a clean approval trail.",
+                "description": "Create manager-ready schedules with backup coverage and a clean approval trail.",
                 "href": "/scheduler",
                 "cta": "Plan shifts",
             }

@@ -37,7 +37,7 @@
       <article class="carousel-slide {% if loop.first %}active{% endif %}">
         <span class="eyebrow">{{ item.eyebrow }}</span>
         <h3>{{ item.title }}</h3>
-        <p>{{ item.copy }}</p>
+        <p>{{ item.description }}</p>
         <a class="text-link" href="{{ item.href }}">{{ item.cta }}</a>
       </article>
     {% endfor %}

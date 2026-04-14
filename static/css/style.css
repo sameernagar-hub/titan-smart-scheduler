@@ -337,23 +337,19 @@ textarea,
   background: var(--panel-2);
 }
 
-.activity-stage { margin-bottom: 24px; overflow: hidden; }
-.carousel { position: relative; min-height: 180px; }
+.activity-stage { margin-bottom: 24px; overflow: visible; }
+.carousel { position: relative; }
 .carousel-slide {
-  position: absolute;
-  inset: 0;
+  display: none;
   padding: 22px;
   border-radius: 24px;
   background: linear-gradient(135deg, color-mix(in srgb, var(--brand) 14%, transparent), color-mix(in srgb, var(--brand-2) 10%, transparent));
-  opacity: 0;
-  transform: translateX(24px) scale(0.98);
-  pointer-events: none;
-  transition: opacity 420ms ease, transform 420ms ease;
+  border: 1px solid color-mix(in srgb, var(--text) 10%, transparent);
+  box-shadow: 0 18px 40px color-mix(in srgb, var(--shadow) 30%, transparent);
 }
 .carousel-slide.active {
-  opacity: 1;
-  transform: translateX(0) scale(1);
-  pointer-events: auto;
+  display: block;
+  animation: carouselFade 320ms ease;
 }
 .carousel-slide h3 { margin: 0.4rem 0; font-size: clamp(1.6rem, 3vw, 2.4rem); }
 .carousel-slide p { max-width: 680px; color: var(--muted); }
@@ -370,6 +366,17 @@ textarea,
 .carousel-dot.active {
   transform: scale(1.2);
   background: linear-gradient(135deg, var(--brand), var(--brand-2));
+}
+
+@keyframes carouselFade {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .text-link { color: var(--brand-3); text-decoration: none; }
