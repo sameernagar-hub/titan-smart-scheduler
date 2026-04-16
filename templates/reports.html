@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Reports | Titan Scheduler{% endblock %}
+{% block content %}
+<section class="page-intro glass">
+  <div class="section-head">
+    <div class="card-top">
+      <h1>Report Studio</h1>
+      <details class="help-pop">
+        <summary aria-label="Explain report studio">?</summary>
+        <div>Choose a report type, compare the same report in ReportLab and WeasyPrint, and download the version that best fits your audience.</div>
+      </details>
+    </div>
+    <p>Use this workspace to compare backend-first PDF reliability against HTML/CSS-driven design fidelity before exporting the final report.</p>
+  </div>
+  <form class="report-filter" method="get" action="{{ url_for('reports_page') }}">
+    <label class="report-filter-control">
+      <span>Report type</span>
+      <select name="type" onchange="this.form.submit()">
+        {% for key, item in report_options.items() %}
+          <option value="{{ key }}" {% if report_type == key %}selected{% endif %}>{{ item.label }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <noscript><button class="primary-btn" type="submit">Update preview</button></noscript>
+  </form>
+</section>
+
+<section class="stats-band">
+  <article class="metric-tile"><span>Selected Report</span><strong>{{ report_options[report_type].label }}</strong></article>
+  <article class="metric-tile"><span>Renderer A</span><strong>{{ renderer_options['reportlab'].label }}</strong></article>
+  <article class="metric-tile"><span>Renderer B</span><strong>{{ renderer_options['weasyprint'].label }}</strong></article>
+  <article class="metric-tile"><span>Choice Model</span><strong>Preview then download</strong></article>
+</section>
+
+<section class="report-preview-grid">
+  {% for key, renderer in renderer_options.items() %}
+    <article class="glass report-preview-card">
+      <div class="section-head">
+        <h2>{{ renderer.label }}</h2>
+        <p>{{ renderer.summary }}</p>
+      </div>
+      <div class="inline-badges">
+        <span class="badge soft">{{ report_options[report_type].label }}</span>
+        <span class="badge soft">{{ key }}</span>
+      </div>
+      <div class="cta-row">
+        <a class="primary-btn" href="{{ url_for('report_pdf', report_type=report_type, renderer=key) }}">Download {{ renderer.label }} PDF</a>
+        <a class="ghost-btn" href="{{ url_for('report_pdf', report_type=report_type, renderer=key, disposition='inline') }}" target="_blank" rel="noreferrer">Open standalone</a>
+      </div>
+      <div class="pdf-frame-wrap">
+        <iframe
+          class="pdf-frame"
+          title="{{ renderer.label }} preview"
+          src="{{ url_for('report_pdf', report_type=report_type, renderer=key, disposition='inline') }}">
+        </iframe>
+      </div>
+    </article>
+  {% endfor %}
+</section>
+{% endblock %}

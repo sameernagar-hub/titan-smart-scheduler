@@ -9,6 +9,13 @@ from typing import Any, Dict, List, Optional
 
 from flask import Flask, abort, g, jsonify, make_response, redirect, render_template, request, url_for
 
+from pdf_reports import (
+    RENDERER_OPTIONS,
+    REPORT_OPTIONS,
+    build_analytics_report_data,
+    build_ethics_report_data,
+    build_pdf_bytes,
+)
 import scheduler_engine
 from scheduler_config import (
     ALGORITHM_META,
@@ -125,6 +132,14 @@ def ethics_snapshot() -> Dict[str, Any]:
         """
     ).fetchall()
     return build_ethics_snapshot(rows)
+
+
+def report_data_for(report_type: str) -> Dict[str, Any]:
+    if report_type == "analytics":
+        return build_analytics_report_data(service_analytics_snapshot())
+    if report_type == "ethics":
+        return build_ethics_report_data(ethics_snapshot(), ETHICS_THEORIES)
+    raise ValueError(f"Unsupported report type: {report_type}")
 
 
 def feedback_snapshot(limit: int = 5) -> List[Dict[str, Any]]:
@@ -520,6 +535,20 @@ def services_page() -> str:
     return render_template("services.html", page_name="services", service_cards=summarize_services(), analytics=service_analytics_snapshot())
 
 
+@app.route("/reports")
+def reports_page() -> str:
+    report_type = (request.args.get("type") or "analytics").strip().lower()
+    if report_type not in REPORT_OPTIONS:
+        report_type = "analytics"
+    return render_template(
+        "reports.html",
+        page_name="reports",
+        report_type=report_type,
+        report_options=REPORT_OPTIONS,
+        renderer_options=RENDERER_OPTIONS,
+    )
+
+
 @app.route("/scheduler")
 def scheduler_page() -> str:
     return render_template(
@@ -540,6 +569,39 @@ def analytics_page() -> str:
 @app.route("/ethics")
 def ethics_page() -> str:
     return render_template("ethics.html", page_name="ethics", ethics=ethics_snapshot(), theories=ETHICS_THEORIES)
+
+
+@app.route("/analytics/report.pdf")
+def analytics_report_pdf():
+    pdf_bytes = build_pdf_bytes("analytics", "reportlab", report_data_for("analytics"))
+    response = make_response(pdf_bytes)
+    response.headers["Content-Type"] = "application/pdf"
+    response.headers["Content-Disposition"] = "attachment; filename=operations-analytics-report.pdf"
+    return response
+
+
+@app.route("/ethics/report.pdf")
+def ethics_report_pdf():
+    pdf_bytes = build_pdf_bytes("ethics", "reportlab", report_data_for("ethics"))
+    response = make_response(pdf_bytes)
+    response.headers["Content-Type"] = "application/pdf"
+    response.headers["Content-Disposition"] = "attachment; filename=ethics-review-report.pdf"
+    return response
+
+
+@app.route("/reports/pdf/<report_type>/<renderer>")
+def report_pdf(report_type: str, renderer: str):
+    normalized_type = report_type.strip().lower()
+    normalized_renderer = renderer.strip().lower()
+    if normalized_type not in REPORT_OPTIONS or normalized_renderer not in RENDERER_OPTIONS:
+        abort(404)
+    disposition = "inline" if (request.args.get("disposition") or "attachment").strip().lower() == "inline" else "attachment"
+    pdf_bytes = build_pdf_bytes(normalized_type, normalized_renderer, report_data_for(normalized_type))
+    filename = f"{REPORT_OPTIONS[normalized_type]['filename']}-{normalized_renderer}.pdf"
+    response = make_response(pdf_bytes)
+    response.headers["Content-Type"] = "application/pdf"
+    response.headers["Content-Disposition"] = f"{disposition}; filename={filename}"
+    return response
 
 
 @app.route("/history")

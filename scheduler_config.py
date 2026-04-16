@@ -45,6 +45,7 @@ ALGORITHM_META = {
 FOOTER_LINKS = [
     {"title": "Planning Desk", "href": "/scheduler"},
     {"title": "Analytics", "href": "/analytics"},
+    {"title": "Reports", "href": "/reports"},
     {"title": "Archive", "href": "/history"},
     {"title": "Ethics", "href": "/ethics"},
     {"title": "Feedback", "href": "/feedback"},
@@ -148,6 +149,14 @@ FAQ_ITEMS = [
     {
         "question": "How does history work?",
         "answer": "Every generated schedule run is stored automatically so you can review prior assignments, compare analytics, and reuse seeded demo data.",
+    },
+    {
+        "question": "What is Report Studio?",
+        "answer": "Report Studio lets you preview the analytics or ethics report in both ReportLab and WeasyPrint, compare the outputs side by side, and download the version you want to share.",
+    },
+    {
+        "question": "Why are there two PDF renderers?",
+        "answer": "ReportLab is more backend-oriented and reliable for structured reporting, while WeasyPrint is stronger when you want HTML/CSS-driven visual fidelity. The compare view lets you choose which result fits the audience.",
     },
     {
         "question": "What do the question-mark hints mean?",

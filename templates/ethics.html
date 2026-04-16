@@ -12,6 +12,10 @@
     </div>
     <p>Each saved plan receives an ethics record showing how well the scheduling logic protects students, respects consistent rules, and preserves reasonable operational coverage.</p>
   </div>
+  <div class="cta-row">
+    <a class="primary-btn" href="{{ url_for('ethics_report_pdf') }}">Download PDF Report</a>
+    <a class="ghost-btn" href="{{ url_for('reports_page', type='ethics') }}">Preview Both Renderers</a>
+  </div>
 </section>
 
 <section class="stats-band">
@@ -71,7 +75,7 @@
         {% for run in ethics.runs %}
           <tr>
             <td>{{ run.name }}</td>
-            <td>{{ run.created_at[:10] }}</td>
+            <td>{{ run.created_at_display }}</td>
             <td>{{ run.overall_score }}</td>
             <td>{{ run.overall_status }}</td>
             <td><a href="{{ url_for('history_detail_page', run_id=run.id) }}">Open ethics record</a></td>

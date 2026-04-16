@@ -497,6 +497,39 @@ body.page-ready .page-shell > * {
   gap: 24px;
   align-items: start;
 }
+.report-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: end;
+  margin-top: 18px;
+}
+.report-filter-control {
+  min-width: 260px;
+}
+.report-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  align-items: start;
+}
+.report-preview-card {
+  padding: 24px;
+}
+.pdf-frame-wrap {
+  margin-top: 16px;
+  border-radius: 22px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--bg-elevated) 88%, white);
+  min-height: 760px;
+}
+.pdf-frame {
+  width: 100%;
+  height: 760px;
+  border: 0;
+  background: white;
+}
 
 .grid-two,
 .row,
@@ -976,6 +1009,7 @@ textarea:focus-visible {
   .hero-panel,
   .workspace,
   .results-layout,
+  .report-preview-grid,
   .analytics-grid,
   .showcase-grid,
   .dual-grid,
@@ -996,6 +1030,7 @@ textarea:focus-visible {
   .row-3,
   .luxe-stats,
   .results-layout,
+  .report-preview-grid,
   .analytics-grid,
   .showcase-grid,
   .card-grid,
@@ -1017,6 +1052,11 @@ textarea:focus-visible {
   }
   .theme-picker { width: 100%; justify-content: space-between; }
   .theme-switcher { justify-content: flex-end; }
+  .pdf-frame-wrap,
+  .pdf-frame {
+    min-height: 560px;
+    height: 560px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

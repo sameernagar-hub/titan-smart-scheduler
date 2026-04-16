@@ -1,6 +1,6 @@
 # Titan Smart Scheduler
 
-Adaptive ethical scheduling platform for student-worker operations, featuring multi-page planning, archived run history, ethics evaluation, algorithm comparison, ethics-driven schedule suggestions, bulk template import, feedback capture, and downloadable schedule exports.
+Adaptive ethical scheduling platform for student-worker operations, featuring multi-page planning, archived run history, ethics evaluation, algorithm comparison, ethics-driven schedule suggestions, bulk template import, feedback capture, and downloadable schedule exports including dual-renderer PDF reports.
 
 ---
 
@@ -17,6 +17,7 @@ It is a working service-style scheduling application that lets you:
 - generate grounded improvement suggestions when an ethics review needs attention
 - import a prepared planning template instead of filling every field manually
 - export completed plans as JSON or CSV for downstream use
+- compare ReportLab and WeasyPrint output in a dedicated PDF preview studio before downloading reports
 
 ---
 
@@ -96,6 +97,7 @@ http://127.0.0.1:5000/
 - uploadable planner template for bulk input
 - feedback lounge for product notes and contribution interest
 - JSON and CSV exports for completed plans
+- side-by-side PDF preview and download flow for analytics and ethics reporting
 
 ### Review And Reporting
 
@@ -104,6 +106,7 @@ http://127.0.0.1:5000/
 - alert and conflict trend views
 - algorithm-level analytics and performance comparisons
 - ethics scoring and archived ethics records
+- downloadable analytics and ethics PDF reports rendered through both ReportLab and WeasyPrint
 - seeded example runs for a presentation-ready first launch
 
 ---
@@ -117,6 +120,7 @@ The platform is organized as separate service areas so each workflow has its own
 | `Home` | Presents the platform, activity board, and service entry points | Overview + recent activity |
 | `Shift Planning Desk` | Builds a new staffing plan | New saved plan |
 | `Operations Dashboard` | Reviews operational metrics across saved plans | Coverage, fairness, and alert trends |
+| `Report Studio` | Compares export renderers for printable reporting | Side-by-side PDF previews + downloads |
 | `Ethics Review Board` | Reviews plans through ethical theory lenses | Ethics scores + theory-by-theory analysis |
 | `Coverage Archive` | Lists previous saved plans | Plan history |
 | `Plan Details` | Opens one archived plan | Staffing detail, exports, ethics record + grounded schedule suggestions |
@@ -133,7 +137,8 @@ The platform is organized as separate service areas so each workflow has its own
 4. Open the saved record in `Coverage Archive`.
 5. Review the same plan in `Operations Dashboard` and `Ethics Review Board` for reporting.
 6. If the ethics record shows `Needs review`, use the schedule suggestions block in the run detail page to see which adjustments should be made first.
-7. Download the plan as JSON or CSV when you need to share or reuse it.
+7. Open `Report Studio` when you want a printable analytics or ethics briefing and choose between the ReportLab and WeasyPrint PDF versions.
+8. Download the plan as JSON or CSV when you need structured downstream data.
 
 ---
 
@@ -200,11 +205,15 @@ Saved plans can be exported as:
 
 - `JSON` for structured downstream use
 - `CSV` for spreadsheet or calendar-oriented workflows
+- `PDF` for printable analytics and ethics briefings
 
 Available endpoints:
 
 - `GET /history/<run_id>/download/json`
 - `GET /history/<run_id>/download/csv`
+- `GET /analytics/report.pdf`
+- `GET /ethics/report.pdf`
+- `GET /reports/pdf/<report_type>/<renderer>`
 
 Bulk-input template endpoints:
 
@@ -220,6 +229,7 @@ Bulk-input template endpoints:
 |-- scheduler_config.py
 |-- scheduler_engine.py
 |-- scheduler_reporting.py
+|-- pdf_reports.py
 |-- app.py
 |-- README.md
 |-- LICENSE
@@ -230,6 +240,7 @@ Bulk-input template endpoints:
 |   |-- services.html
 |   |-- scheduler.html
 |   |-- analytics.html
+|   |-- reports.html
 |   |-- ethics.html
 |   |-- history.html
 |   |-- history_detail.html
@@ -244,10 +255,11 @@ Bulk-input template endpoints:
 
 ### Key Files
 
-- `app.py` Flask entrypoint, database lifecycle, persistence helpers, and route handlers
+- `app.py` Flask entrypoint, database lifecycle, persistence helpers, route handlers, and report export routes
 - `scheduler_config.py` app metadata, FAQ items, seeded scenarios, and algorithm definitions
 - `scheduler_engine.py` parsing, scheduling algorithms, conflicts, warnings, and import/export helpers
 - `scheduler_reporting.py` ethics scoring, analytics rollups, and schedule suggestion generation
+- `pdf_reports.py` dual-renderer PDF report builders for ReportLab and WeasyPrint
 - `templates/` multi-page HTML templates for each service area
 - `static/css/style.css` design system, themes, responsiveness, and motion
 - `static/js/app.js` theme behavior, homepage activity carousel, scheduler interactions, and template import flow
@@ -262,6 +274,19 @@ Bulk-input template endpoints:
 python -m venv .venv
 .\.venv\Scripts\python -m pip install -r requirements.txt
 .\.venv\Scripts\python .\app.py
+```
+
+### PDF Reporting Dependencies
+
+The project now uses:
+
+- `reportlab` for backend-oriented PDF reliability
+- `weasyprint` for HTML/CSS-driven PDF fidelity
+
+On Windows, WeasyPrint also needs the GTK runtime. If PDF previews or WeasyPrint exports fail, install the runtime with:
+
+```powershell
+winget install -e --id tschoonj.GTKForWindows --accept-package-agreements --accept-source-agreements
 ```
 
 ### If PowerShell blocks activation scripts
@@ -289,6 +314,7 @@ You can skip activation entirely and run the virtual environment interpreter dir
 - Built with Flask and SQLite for a lightweight full-stack setup
 - Designed as a service platform rather than a single one-page utility
 - Uses Jinja templates plus vanilla JavaScript for the UI layer
+- Uses both ReportLab and WeasyPrint for comparative PDF reporting
 - Includes seeded history so the app is not empty on first launch
 - Keeps ethics evaluation tied directly to archived operational decisions
 - Keeps schedule suggestions tied directly to the stored run data so recommendations are specific instead of generic
@@ -310,4 +336,4 @@ Titan Smart Scheduler is designed to be:
 - strong enough to demo as a software product
 - structured enough to present as a systems project
 - thoughtful enough to support an ethics-centered academic framing
-- polished enough to serve as a standout GitHub portfolio piece
+- cohesive enough to serve as a strong GitHub portfolio piece

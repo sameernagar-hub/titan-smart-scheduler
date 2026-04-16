@@ -8,10 +8,26 @@ class AppSmokeTests(unittest.TestCase):
         self.client = app.app.test_client()
 
     def test_core_pages_render(self):
-        for route in ["/", "/services", "/scheduler", "/analytics", "/ethics", "/history", "/faq", "/feedback"]:
+        for route in ["/", "/services", "/scheduler", "/analytics", "/reports", "/ethics", "/history", "/faq", "/feedback"]:
             with self.subTest(route=route):
                 response = self.client.get(route)
                 self.assertEqual(response.status_code, 200)
+
+    def test_pdf_reports_download(self):
+        for route in [
+            "/analytics/report.pdf",
+            "/ethics/report.pdf",
+            "/reports/pdf/analytics/reportlab",
+            "/reports/pdf/analytics/weasyprint",
+            "/reports/pdf/ethics/reportlab",
+            "/reports/pdf/ethics/weasyprint",
+        ]:
+            with self.subTest(route=route):
+                response = self.client.get(route)
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response.headers["Content-Type"], "application/pdf")
+                self.assertTrue(response.data.startswith(b"%PDF-"))
+                self.assertGreater(len(response.data), 2000)
 
     def test_generate_and_download_flow(self):
         run_id = None

@@ -375,6 +375,12 @@ def summarize_services() -> List[Dict[str, str]]:
             "help": "This page is the quick onboarding layer for managers, reviewers, and anyone learning how the platform works.",
         },
         {
+            "title": "Report Studio",
+            "summary": "Preview analytics and ethics reports in multiple PDF renderers, compare the outputs, and download the one you want to share.",
+            "href": "/reports",
+            "help": "This workspace lets you compare the same report in multiple PDF engines before choosing which version to download.",
+        },
+        {
             "title": "Feedback Lounge",
             "summary": "Capture feedback, feature ideas, and contribution interest in a dedicated channel inside the product.",
             "href": "/feedback",
@@ -483,6 +489,7 @@ def build_ethics_snapshot(rows: List[Any]) -> Dict[str, Any]:
                 "id": row["id"],
                 "name": row["name"],
                 "created_at": row["created_at"],
+                "created_at_display": format_timestamp(row["created_at"]),
                 "overall_score": ethics.get("overall_score", 0),
                 "overall_status": ethics.get("overall_status", "Not rated"),
                 "theories": ethics.get("theories", []),
