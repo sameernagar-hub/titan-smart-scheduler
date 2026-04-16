@@ -90,10 +90,11 @@ img { max-width: 100%; display: block; }
 
 .topbar {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
-  padding: 22px 28px;
+  gap: 16px 20px;
+  padding: 22px 28px 18px;
 }
 
 .brand {
@@ -101,6 +102,7 @@ img { max-width: 100%; display: block; }
   align-items: center;
   gap: 14px;
   text-decoration: none;
+  flex: 0 0 auto;
 }
 
 .brand-mark {
@@ -130,7 +132,9 @@ img { max-width: 100%; display: block; }
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
-  justify-content: center;
+  justify-content: flex-end;
+  flex: 1 1 720px;
+  min-width: min(100%, 520px);
 }
 
 .main-nav a,
@@ -174,6 +178,8 @@ textarea,
   display: inline-flex;
   align-items: center;
   gap: 10px;
+  margin-left: auto;
+  flex: 0 0 auto;
 }
 
 .theme-picker span { color: var(--muted); font-size: 0.9rem; }
@@ -1014,7 +1020,9 @@ textarea:focus-visible {
   .showcase-grid,
   .dual-grid,
   .site-footer { grid-template-columns: 1fr; }
-  .topbar { flex-direction: column; align-items: stretch; }
+  .topbar { align-items: stretch; }
+  .main-nav { justify-content: flex-start; }
+  .theme-picker { margin-left: 0; align-self: flex-start; }
   .luxe-stats { grid-template-columns: repeat(3, 1fr); }
   .calendar-grid { grid-template-columns: repeat(2, 1fr); }
   .coverage-row,
