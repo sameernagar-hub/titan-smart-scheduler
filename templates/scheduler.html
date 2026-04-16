@@ -8,7 +8,7 @@
   </div>
   <div class="inline-badges">
     <span class="badge soft">Auto-saves to history</span>
-    <span class="badge soft">Accessibility-focused</span>
+    <span class="badge soft">Algorithm-aware analytics</span>
     <span class="badge soft">Manager-ready workflow</span>
   </div>
 </section>
@@ -23,7 +23,7 @@
           <div>This workspace creates a new staffing plan, stores it in the archive, and refreshes reporting automatically.</div>
         </details>
       </div>
-      <p>Choose a planning mode, describe the student context, and generate a schedule with backup support.</p>
+      <p>Choose a planning mode, describe the student context, and generate a premium coverage plan with the algorithm profile that best fits the moment.</p>
     </div>
 
     <label>
@@ -38,10 +38,12 @@
 
     <div class="grid-two compact-gap">
       <label>
-        <span>Algorithm <details class="help-inline"><summary>?</summary><div>Round Robin algorithms rotate pairings differently but both spread opportunities across the group.</div></details></span>
+        <span>Algorithm <details class="help-inline"><summary>?</summary><div>Rotation algorithms prioritize fairness and predictability. Priority Scheduling favors reliable coverage. Constraint Shield uses all constraints to reduce avoidable conflicts.</div></details></span>
         <select id="algorithm">
-          <option value="circle" selected>Circle Method</option>
-          <option value="standard">Standard Round Robin</option>
+          <option value="constraint_shield" selected>Constraint Shield</option>
+          <option value="priority">Priority Scheduling</option>
+          <option value="circle">Circle Method</option>
+          <option value="round_robin">Round Robin</option>
         </select>
       </label>
       <label>
@@ -49,6 +51,25 @@
         <input id="weeks" type="number" min="1" max="12" value="4">
       </label>
     </div>
+
+    <section class="card inset algorithm-showcase">
+      <div class="card-title-row">
+        <h3>Algorithm lounge</h3>
+      </div>
+      <p class="muted small">Pick the planning personality that fits the moment: fairness-first rotation, reliability-first priority coverage, or the most protective conflict-aware mode.</p>
+      <div class="algorithm-grid">
+        {% for key, item in algorithms.items() %}
+          {% if key != 'standard' %}
+            <article class="algorithm-card">
+              <span class="eyebrow">{{ item.family }}</span>
+              <strong>{{ item.label }}</strong>
+              <p>{{ item.summary }}</p>
+              <small>{{ item.tagline }}</small>
+            </article>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </section>
 
     <section class="card inset">
       <div class="card-title-row">
@@ -108,11 +129,18 @@
       <article class="stat-card"><span class="label">Primary Assignments</span><strong id="statAssignments">0</strong></article>
       <article class="stat-card"><span class="label">Backup Assignments</span><strong id="statBackups">0</strong></article>
       <article class="stat-card"><span class="label">Coverage Ready</span><strong id="statCoverage">0%</strong></article>
+      <article class="stat-card"><span class="label">Conflict Free</span><strong id="statConflictFree">0%</strong></article>
       <article class="stat-card"><span class="label">Avg / Student</span><strong id="statAverage">0</strong></article>
       <article class="stat-card"><span class="label">Fairness Spread</span><strong id="statSpread">0</strong></article>
+      <article class="stat-card"><span class="label">Algorithm</span><strong id="statAlgorithm">-</strong></article>
     </div>
 
     <div id="historyLinkBox" class="history-banner hidden"></div>
+
+    <section class="card inset hidden" id="algorithmInsightBox">
+      <div class="card-title-row"><h3>Algorithm readout</h3></div>
+      <div id="algorithmInsightContent" class="algorithm-readout"></div>
+    </section>
 
     <div class="dual-grid">
       <section class="card inset">

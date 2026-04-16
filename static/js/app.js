@@ -1,5 +1,11 @@
 const pageName = document.body.dataset.page || "";
 
+function initializePageMotion() {
+  window.requestAnimationFrame(() => {
+    document.body.classList.add("page-ready");
+  });
+}
+
 function applyStoredTheme() {
   const root = document.documentElement;
   const picker = document.getElementById("themePicker");
@@ -26,12 +32,22 @@ function initializeThemePicker() {
   });
 }
 
+function initializeDetailsDismiss() {
+  document.addEventListener("click", (event) => {
+    document.querySelectorAll("details.help-pop[open], details.help-inline[open]").forEach((details) => {
+      if (!details.contains(event.target)) details.removeAttribute("open");
+    });
+  });
+}
+
 function initializeHomeCarousel() {
   const carousel = document.getElementById("homeCarousel");
   const dots = Array.from(document.querySelectorAll("#homeCarouselDots .carousel-dot"));
   if (!carousel || dots.length <= 1) return;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   const slides = Array.from(carousel.querySelectorAll(".carousel-slide"));
   let activeIndex = 0;
+  let intervalId = null;
 
   function render(index) {
     activeIndex = index;
@@ -39,13 +55,26 @@ function initializeHomeCarousel() {
     dots.forEach((dot, dotIndex) => dot.classList.toggle("active", dotIndex === index));
   }
 
+  function startRotation() {
+    if (intervalId) return;
+    intervalId = window.setInterval(() => {
+      render((activeIndex + 1) % slides.length);
+    }, 4000);
+  }
+
+  function stopRotation() {
+    if (!intervalId) return;
+    window.clearInterval(intervalId);
+    intervalId = null;
+  }
+
   dots.forEach((dot) => {
     dot.addEventListener("click", () => render(Number(dot.dataset.index)));
   });
 
-  window.setInterval(() => {
-    render((activeIndex + 1) % slides.length);
-  }, 4000);
+  carousel.addEventListener("mouseenter", stopRotation);
+  carousel.addEventListener("mouseleave", startRotation);
+  startRotation();
 }
 
 function escapeHtml(value = "") {
@@ -80,14 +109,18 @@ function getWeekDates(offset) {
 }
 
 function initializeSchedulerPage() {
+  const DEFAULT_MODE = "round_robin";
+  const DEFAULT_ALGORITHM = "constraint_shield";
+  const DEFAULT_WEEKS = 4;
   const state = {
-    mode: "round_robin",
+    mode: DEFAULT_MODE,
     resultView: "list",
     currentWeekOffset: 0,
     assignments: [],
     conflicts: [],
     warnings: [],
     stats: null,
+    algorithmInsights: null,
     ethics: null,
     calloutPlan: [],
     historyUrl: "",
@@ -119,13 +152,17 @@ function initializeSchedulerPage() {
     warningList: document.getElementById("warningList"),
     calloutBox: document.getElementById("calloutBox"),
     calloutList: document.getElementById("calloutList"),
+    algorithmInsightBox: document.getElementById("algorithmInsightBox"),
+    algorithmInsightContent: document.getElementById("algorithmInsightContent"),
     historyLinkBox: document.getElementById("historyLinkBox"),
     statStudents: document.getElementById("statStudents"),
     statAssignments: document.getElementById("statAssignments"),
     statBackups: document.getElementById("statBackups"),
     statCoverage: document.getElementById("statCoverage"),
+    statConflictFree: document.getElementById("statConflictFree"),
     statAverage: document.getElementById("statAverage"),
     statSpread: document.getElementById("statSpread"),
+    statAlgorithm: document.getElementById("statAlgorithm"),
   };
 
   function flash(message, type = "success") {
@@ -140,7 +177,6 @@ function initializeSchedulerPage() {
       button.classList.toggle("active", button.dataset.mode === mode);
     });
     els.customShiftCard.classList.toggle("hidden", mode !== "custom");
-    els.algorithm.disabled = mode === "custom";
   }
 
   function switchResultView(view) {
@@ -228,9 +264,9 @@ function initializeSchedulerPage() {
 
   function populateFromImportedPayload(payload) {
     els.scheduleName.value = payload.schedule_name || "";
-    els.algorithm.value = payload.algorithm || "circle";
-    els.weeks.value = payload.weeks || 4;
-    switchMode(payload.mode || "round_robin");
+    els.algorithm.value = payload.algorithm || DEFAULT_ALGORITHM;
+    els.weeks.value = payload.weeks || DEFAULT_WEEKS;
+    switchMode(payload.mode || DEFAULT_MODE);
 
     els.studentsContainer.innerHTML = "";
     (payload.students || []).forEach((student) => {
@@ -314,8 +350,33 @@ function initializeSchedulerPage() {
     els.statAssignments.textContent = stats.total_assignments || 0;
     els.statBackups.textContent = stats.total_backup_assignments || 0;
     els.statCoverage.textContent = `${stats.coverage_ready_percent || 0}%`;
+    els.statConflictFree.textContent = `${stats.conflict_free_percent || 0}%`;
     els.statAverage.textContent = stats.average_assignments || 0;
     els.statSpread.textContent = stats.fairness_spread || 0;
+    els.statAlgorithm.textContent = stats.algorithm_label || "-";
+  }
+
+  function renderAlgorithmInsights() {
+    const insight = state.algorithmInsights;
+    if (!insight) {
+      els.algorithmInsightBox.classList.add("hidden");
+      els.algorithmInsightContent.innerHTML = "";
+      return;
+    }
+    els.algorithmInsightBox.classList.remove("hidden");
+    els.algorithmInsightContent.innerHTML = `
+      <div class="algorithm-hero">
+        <strong>${escapeHtml(insight.label)}</strong>
+        <span>${escapeHtml(insight.family)} / ${escapeHtml(insight.headline)}</span>
+      </div>
+      <p>${escapeHtml(insight.summary)}</p>
+      <div class="algorithm-pills">
+        <span class="badge soft">Preference match ${insight.preference_match_rate}%</span>
+        <span class="badge soft">Conflict free ${insight.conflict_free_percent}%</span>
+        <span class="badge soft">Coverage ${insight.coverage_ready_percent}%</span>
+        <span class="badge soft">Avg risk ${insight.average_risk}</span>
+      </div>
+    `;
   }
 
   function renderWorkloadBars() {
@@ -442,10 +503,11 @@ function initializeSchedulerPage() {
       return;
     }
     els.historyLinkBox.classList.remove("hidden");
+    const algorithmSnippet = state.algorithmInsights ? ` Algorithm: <strong>${escapeHtml(state.algorithmInsights.label)}</strong>.` : "";
     const ethicsSnippet = state.ethics ? ` Ethics review: <strong>${escapeHtml(state.ethics.overall_status)}</strong> (${state.ethics.overall_score}).` : "";
     const exportJson = state.exportJsonUrl ? `<a href="${state.exportJsonUrl}">Download JSON</a>` : "";
     const exportCsv = state.exportCsvUrl ? `<a href="${state.exportCsvUrl}">Download CSV</a>` : "";
-    els.historyLinkBox.innerHTML = `Saved to the archive. <a href="${state.historyUrl}">Open this plan</a> or <a href="/history">browse all plans</a>.${ethicsSnippet} ${exportJson} ${exportCsv}`.trim();
+    els.historyLinkBox.innerHTML = `Saved to the archive. <a href="${state.historyUrl}">Open this plan</a> or <a href="/history">browse all plans</a>.${algorithmSnippet}${ethicsSnippet} ${exportJson} ${exportCsv}`.trim();
   }
 
   async function generateSchedule() {
@@ -454,7 +516,12 @@ function initializeSchedulerPage() {
       flash("Please enter at least two student names.", "error");
       return;
     }
+    if (state.mode === "custom" && !(payload.shift_templates || []).length) {
+      flash("Add at least one shift template before generating a custom plan.", "error");
+      return;
+    }
     els.generateBtn.disabled = true;
+    els.generateBtn.textContent = "Generating...";
     flash("Building staffing plan with backup coverage...", "success");
     try {
       const response = await fetch("/api/generate", {
@@ -468,6 +535,7 @@ function initializeSchedulerPage() {
       state.conflicts = data.conflicts;
       state.warnings = data.warnings;
       state.stats = data.stats;
+      state.algorithmInsights = data.algorithm_insights;
       state.ethics = data.ethics;
       state.calloutPlan = data.callout_plan;
       state.historyUrl = data.history_url || "";
@@ -476,6 +544,7 @@ function initializeSchedulerPage() {
       state.currentWeekOffset = 0;
       renderStats();
       renderWorkloadBars();
+      renderAlgorithmInsights();
       renderConflicts();
       renderWarnings();
       renderCalloutPlan();
@@ -487,16 +556,21 @@ function initializeSchedulerPage() {
       flash(error.message, "error");
     } finally {
       els.generateBtn.disabled = false;
+      els.generateBtn.textContent = "Generate Plan";
     }
   }
 
   function resetAll() {
     seedInitialCards();
     els.scheduleName.value = "";
+    switchMode(DEFAULT_MODE);
+    els.algorithm.value = DEFAULT_ALGORITHM;
+    els.weeks.value = DEFAULT_WEEKS;
     state.assignments = [];
     state.conflicts = [];
     state.warnings = [];
     state.stats = null;
+    state.algorithmInsights = null;
     state.ethics = null;
     state.calloutPlan = [];
     state.historyUrl = "";
@@ -504,6 +578,7 @@ function initializeSchedulerPage() {
     state.exportCsvUrl = "";
     renderStats();
     renderWorkloadBars();
+    renderAlgorithmInsights();
     renderConflicts();
     renderWarnings();
     renderCalloutPlan();
@@ -544,11 +619,14 @@ function initializeSchedulerPage() {
   });
 
   seedInitialCards();
-  switchMode("round_robin");
+  switchMode(DEFAULT_MODE);
+  els.algorithm.value = DEFAULT_ALGORITHM;
   switchResultView("list");
 }
 
 applyStoredTheme();
+initializePageMotion();
 initializeThemePicker();
+initializeDetailsDismiss();
 if (pageName === "home") initializeHomeCarousel();
 if (pageName === "scheduler") initializeSchedulerPage();

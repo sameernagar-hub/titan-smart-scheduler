@@ -4,17 +4,31 @@
 <section class="page-intro glass">
   <div class="section-head">
     <h1>{{ detail.run.name }}</h1>
-    <p>{{ "Smart Custom" if detail.run.mode == "custom" else "Round Robin" }} plan stored on {{ detail.run.created_at[:10] }}.</p>
+    <p>{{ detail.run.mode_label }} plan using {{ detail.run.algorithm_label }} stored on {{ detail.run.created_at[:10] }}.</p>
   </div>
   <div class="inline-badges">
     <span class="badge soft">{{ detail.stats.total_assignments }} primary</span>
     <span class="badge soft">{{ detail.stats.total_backup_assignments }} backup</span>
     <span class="badge soft">{{ detail.stats.coverage_ready_percent }}% coverage ready</span>
+    <span class="badge soft">{{ detail.stats.conflict_free_percent }}% conflict free</span>
     <span class="badge soft">Ethics {{ detail.ethics.overall_score }}</span>
   </div>
   <div class="cta-row">
     <a class="ghost-btn" href="{{ url_for('download_run_json', run_id=detail.run.id) }}">Download JSON</a>
     <a class="ghost-btn" href="{{ url_for('download_run_csv', run_id=detail.run.id) }}">Download CSV</a>
+  </div>
+</section>
+
+<section class="glass table-card">
+  <div class="section-head">
+    <h2>Algorithm Readout</h2>
+    <p>{{ detail.algorithm_insights.summary }}</p>
+  </div>
+  <div class="stats-band">
+    <article class="metric-tile"><span>Algorithm</span><strong>{{ detail.algorithm_insights.label }}</strong></article>
+    <article class="metric-tile"><span>Family</span><strong>{{ detail.algorithm_insights.family }}</strong></article>
+    <article class="metric-tile"><span>Preference Match</span><strong>{{ detail.algorithm_insights.preference_match_rate }}%</strong></article>
+    <article class="metric-tile"><span>Average Risk</span><strong>{{ detail.algorithm_insights.average_risk }}</strong></article>
   </div>
 </section>
 
@@ -89,6 +103,28 @@
     </table>
   </div>
 </section>
+
+{% if detail.ethics.overall_status == "Needs review" or detail.conflicts or detail.warnings %}
+<section class="glass table-card">
+  <div class="section-head">
+    <h2>Schedule Suggestions</h2>
+    <p>{{ detail.ethics_suggestions.headline }} Start with <strong>{{ detail.ethics_suggestions.lead_action }}</strong>.</p>
+  </div>
+  <div class="suggestion-stack">
+    {% for item in detail.ethics_suggestions.suggestions %}
+      <article class="suggestion-card priority-{{ item.impact|lower }}">
+        <div class="suggestion-topline">
+          <span class="suggestion-rank">Priority {{ item.rank }}</span>
+          <span class="suggestion-impact">{{ item.impact }} impact</span>
+        </div>
+        <strong>{{ item.title }}</strong>
+        <p><span>Why this matters:</span> {{ item.reason }}</p>
+        <p><span>Suggested adjustment:</span> {{ item.action }}</p>
+      </article>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
 
 <section class="glass table-card">
   <div class="section-head">

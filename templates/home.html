@@ -86,15 +86,15 @@
   </article>
   <article class="glass spotlight-card">
     <div class="section-head">
-      <h2>Highlighted Plan</h2>
-      <p>Seeded data keeps the experience feeling active from the first launch.</p>
+      <h2>Algorithm Spotlight</h2>
+      <p>Recent runs also surface which planning strategy is delivering the strongest coverage story.</p>
     </div>
-    {% if featured_run %}
+    {% if algorithm_spotlight %}
       <div class="run-preview">
-        <strong>{{ featured_run.name }}</strong>
-        <span>{{ featured_run.assignment_count }} primary slots / {{ featured_run.backup_count }} backup slots</span>
-        <span>{{ featured_run.coverage_ready_percent }}% backup readiness</span>
-        <a class="text-link" href="{{ url_for('history_detail_page', run_id=featured_run.id) }}">Open plan details</a>
+        <strong>{{ algorithm_spotlight.label }}</strong>
+        <span>{{ algorithm_spotlight.family }} family across {{ algorithm_spotlight.runs }} stored plans</span>
+        <span>{{ algorithm_spotlight.avg_coverage }}% average readiness / ethics {{ algorithm_spotlight.avg_ethics }}</span>
+        <a class="text-link" href="{{ url_for('analytics_page') }}">Open algorithm analytics</a>
       </div>
     {% else %}
       <p>No planning history is stored yet.</p>

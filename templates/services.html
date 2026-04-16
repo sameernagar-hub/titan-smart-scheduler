@@ -37,5 +37,9 @@
     <span>Average Coverage Balance</span>
     <strong>{{ analytics.summary.avg_fairness }}</strong>
   </article>
+  <article class="metric-tile">
+    <span>Algorithms Active</span>
+    <strong>{{ analytics.algorithm_mix|length }}</strong>
+  </article>
 </section>
 {% endblock %}

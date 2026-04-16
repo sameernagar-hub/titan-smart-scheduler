@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Feedback | Titan Scheduler{% endblock %}
+{% block content %}
+<section class="page-intro glass">
+  <div class="section-head">
+    <h1>Feedback Lounge</h1>
+    <p>Share premium-level polish notes, workflow ideas, or collaboration interest without leaving the product experience.</p>
+  </div>
+  <div class="inline-badges">
+    <span class="badge soft">Product feedback</span>
+    <span class="badge soft">Feature ideas</span>
+    <span class="badge soft">Contribution interest</span>
+  </div>
+</section>
+
+<section class="analytics-grid">
+  <article class="glass chart-card">
+    <div class="section-head">
+      <h2>Leave a Note</h2>
+      <p>Short reactions are welcome. This page stores feedback locally in the project database.</p>
+    </div>
+    {% if success_message %}
+      <div class="flash success">{{ success_message }}</div>
+    {% endif %}
+    {% if error_message %}
+      <div class="flash error">{{ error_message }}</div>
+    {% endif %}
+    <form class="feedback-form" method="post" action="{{ url_for('feedback_page') }}">
+      <div class="grid-two">
+        <label>
+          <span>Name</span>
+          <input type="text" name="name" placeholder="Your name">
+        </label>
+        <label>
+          <span>Role</span>
+          <input type="text" name="role" placeholder="Designer, reviewer, contributor">
+        </label>
+      </div>
+      <label>
+        <span>Rating</span>
+        <select name="rating">
+          <option value="5">5 / Exceptional</option>
+          <option value="4">4 / Strong</option>
+          <option value="3">3 / Solid</option>
+          <option value="2">2 / Needs work</option>
+          <option value="1">1 / Rough</option>
+        </select>
+      </label>
+      <label>
+        <span>Message</span>
+        <textarea name="message" rows="6" placeholder="What feels premium? What should get sharper? Which workflow or visual would you improve next?"></textarea>
+      </label>
+      <div class="cta-row">
+        <button class="primary-btn" type="submit">Send Feedback</button>
+        <a class="ghost-btn" href="{{ project_repo_url }}" target="_blank" rel="noreferrer">Contribute on GitHub</a>
+      </div>
+    </form>
+  </article>
+
+  <article class="glass chart-card">
+    <div class="section-head">
+      <h2>Contribution Paths</h2>
+      <p>Keep the product vibe cohesive while growing the codebase.</p>
+    </div>
+    <div class="list-stack">
+      <div class="list-item">Refine scheduling logic with more domain-aware staffing rules or stronger forecasting assumptions.</div>
+      <div class="list-item">Polish the interface with new premium sections, richer charts, and smoother responsive details.</div>
+      <div class="list-item">Strengthen the archive, analytics, and ethics narratives so the product reads like a polished service suite.</div>
+    </div>
+  </article>
+</section>
+
+<section class="glass table-card">
+  <div class="section-head">
+    <h2>Recent Feedback</h2>
+    <p>Fresh notes from the local feedback board.</p>
+  </div>
+  <div class="list-stack">
+    {% for item in feedback_items %}
+      <div class="list-item">
+        <strong>{{ item.name }}</strong> / {{ item.role }} / {{ item.rating }} out of 5<br>
+        {{ item.message }}
+      </div>
+    {% else %}
+      <div class="list-item">No feedback logged yet. This is a good place to invite product notes after a demo.</div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

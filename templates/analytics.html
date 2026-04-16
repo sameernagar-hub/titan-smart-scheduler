@@ -50,12 +50,12 @@
 
   <article class="glass chart-card">
     <div class="section-head">
-      <h2>Planning Mix</h2>
-      <p>How teams are using structured planning versus rotation-based scheduling.</p>
+      <h2>Algorithm Mix</h2>
+      <p>How often each scheduling strategy appears across saved plans.</p>
     </div>
-    {% set mix_total = analytics.service_mix | sum(attribute='value') %}
+    {% set mix_total = analytics.algorithm_mix | sum(attribute='value') %}
     <div class="mix-list">
-      {% for item in analytics.service_mix %}
+      {% for item in analytics.algorithm_mix %}
         <div class="mix-row">
           <div class="mix-copy">
             <strong>{{ item.name }}</strong>
@@ -73,6 +73,31 @@
 </section>
 
 <section class="analytics-grid">
+  <article class="glass chart-card">
+    <div class="section-head">
+      <h2>Algorithm Performance</h2>
+      <p>Coverage, fairness, and ethics rolled up by scheduling strategy.</p>
+    </div>
+    <div class="mix-list">
+      {% for item in analytics.algorithm_performance %}
+        <div class="mix-row premium-row">
+          <div class="mix-copy">
+            <strong>{{ item.label }}</strong>
+            <small>{{ item.family }} / {{ item.runs }} run{% if item.runs != 1 %}s{% endif %}</small>
+          </div>
+          <div class="mix-metrics">
+            <span>Coverage {{ item.avg_coverage }}%</span>
+            <span>Fairness {{ item.avg_fairness }}</span>
+            <span>Conflicts {{ item.avg_conflicts }}</span>
+            <span>Ethics {{ item.avg_ethics }}</span>
+          </div>
+        </div>
+      {% else %}
+        <p>No algorithm performance data yet.</p>
+      {% endfor %}
+    </div>
+  </article>
+
   <article class="glass chart-card">
     <div class="section-head">
       <h2>Coverage Readiness</h2>
@@ -121,7 +146,7 @@
       <thead>
         <tr>
           <th>Run</th>
-          <th>Mode</th>
+          <th>Algorithm</th>
           <th>Assignments</th>
           <th>Backups</th>
           <th>Warnings</th>
@@ -132,7 +157,7 @@
         {% for run in analytics.recent_runs %}
           <tr>
             <td><a href="{{ url_for('history_detail_page', run_id=run.id) }}">{{ run.name }}</a></td>
-            <td>{{ "Smart Custom" if run.mode == "custom" else "Round Robin" }}</td>
+            <td>{{ run.algorithm_label }}</td>
             <td>{{ run.assignment_count }}</td>
             <td>{{ run.backup_count }}</td>
             <td>{{ run.warning_count }}</td>

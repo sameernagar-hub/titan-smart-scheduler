@@ -27,6 +27,7 @@
       <a href="{{ url_for('analytics_page') }}" class="{% if page_name == 'analytics' %}active{% endif %}">Analytics</a>
       <a href="{{ url_for('ethics_page') }}" class="{% if page_name == 'ethics' %}active{% endif %}">Ethics</a>
       <a href="{{ url_for('history_page') }}" class="{% if page_name == 'history' %}active{% endif %}">History</a>
+      <a href="{{ url_for('feedback_page') }}" class="{% if page_name == 'feedback' %}active{% endif %}">Feedback</a>
       <a href="{{ url_for('faq_page') }}" class="{% if page_name == 'faq' %}active{% endif %}">FAQ</a>
     </nav>
     <div class="theme-picker" role="group" aria-label="Theme selection">
@@ -44,14 +45,24 @@
   </main>
 
   <footer class="site-footer">
-    <div>
+    <div class="footer-card glass">
+      <span class="eyebrow">Product Navigation</span>
       <strong>Titan Smart Scheduler Service</strong>
-      <p>Ethical staffing, stored history, richer analytics, and guided scheduling workflows.</p>
+      <p>Ethical staffing, premium reporting, contribution-ready links, and a smoother way to move across the suite.</p>
+      <div class="footer-links">
+        {% for item in footer_links %}
+          <a href="{{ item.href }}">{{ item.title }}</a>
+        {% endfor %}
+      </div>
     </div>
-    <div class="footer-links">
-      {% for service in services_nav %}
-        <a href="{{ service.href }}">{{ service.title }}</a>
-      {% endfor %}
+    <div class="footer-card glass">
+      <span class="eyebrow">Author</span>
+      <strong>{{ author_profile.name }}</strong>
+      <p>{{ author_profile.bio }}</p>
+      <div class="footer-links">
+        <a href="{{ url_for('feedback_page') }}">Leave Feedback</a>
+        <a href="{{ project_repo_url }}" target="_blank" rel="noreferrer">Contribute on GitHub</a>
+      </div>
     </div>
   </footer>
 

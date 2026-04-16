@@ -1,6 +1,6 @@
 # Titan Smart Scheduler
 
-Adaptive ethical scheduling platform for student-worker operations, featuring multi-page planning, archived run history, ethics evaluation, analytics, bulk template import, and downloadable schedule exports.
+Adaptive ethical scheduling platform for student-worker operations, featuring multi-page planning, archived run history, ethics evaluation, algorithm comparison, ethics-driven schedule suggestions, bulk template import, feedback capture, and downloadable schedule exports.
 
 ---
 
@@ -14,6 +14,7 @@ It is a working service-style scheduling application that lets you:
 - save and reopen completed plans in a dedicated archive
 - review fairness, readiness, and alert trends in a separate analytics service
 - evaluate saved plans against major ethical frameworks in a dedicated ethics service
+- generate grounded improvement suggestions when an ethics review needs attention
 - import a prepared planning template instead of filling every field manually
 - export completed plans as JSON or CSV for downstream use
 
@@ -76,6 +77,7 @@ http://127.0.0.1:5000/
 
 ### Scheduling Engine
 
+- multiple scheduling strategies: Constraint Shield, Priority Scheduling, Circle Method, and Round Robin
 - class conflict detection
 - exam conflict detection
 - weekly hour-limit protection
@@ -89,8 +91,10 @@ http://127.0.0.1:5000/
 - multi-page service layout
 - saved plan archive
 - dedicated run detail pages
+- ethics-driven schedule suggestions inside archived run reviews
 - inline help markers across controls and metrics
 - uploadable planner template for bulk input
+- feedback lounge for product notes and contribution interest
 - JSON and CSV exports for completed plans
 
 ### Review And Reporting
@@ -98,6 +102,7 @@ http://127.0.0.1:5000/
 - workload and risk summaries
 - fairness and coverage metrics
 - alert and conflict trend views
+- algorithm-level analytics and performance comparisons
 - ethics scoring and archived ethics records
 - seeded example runs for a presentation-ready first launch
 
@@ -114,7 +119,8 @@ The platform is organized as separate service areas so each workflow has its own
 | `Operations Dashboard` | Reviews operational metrics across saved plans | Coverage, fairness, and alert trends |
 | `Ethics Review Board` | Reviews plans through ethical theory lenses | Ethics scores + theory-by-theory analysis |
 | `Coverage Archive` | Lists previous saved plans | Plan history |
-| `Plan Details` | Opens one archived plan | Staffing detail, exports, ethics record |
+| `Plan Details` | Opens one archived plan | Staffing detail, exports, ethics record + grounded schedule suggestions |
+| `Feedback Lounge` | Captures product feedback and contribution interest | Stored feedback notes |
 | `Manager Help Center` | Explains services, metrics, and workflow | In-app documentation |
 
 ---
@@ -126,7 +132,8 @@ The platform is organized as separate service areas so each workflow has its own
 3. Review the live results area for assignments, warnings, callout recovery, and workload balance.
 4. Open the saved record in `Coverage Archive`.
 5. Review the same plan in `Operations Dashboard` and `Ethics Review Board` for reporting.
-6. Download the plan as JSON or CSV when you need to share or reuse it.
+6. If the ethics record shows `Needs review`, use the schedule suggestions block in the run detail page to see which adjustments should be made first.
+7. Download the plan as JSON or CSV when you need to share or reuse it.
 
 ---
 
@@ -151,6 +158,7 @@ Each archived plan stores:
 - theory-by-theory scores
 - theory-by-theory interpretation notes
 - an ethics narrative explaining what the system is checking
+- schedule suggestions when conflicts, overload, weak coverage, or other risk signals need attention
 
 This makes the app stronger for:
 
@@ -209,6 +217,9 @@ Bulk-input template endpoints:
 
 ```text
 .
+|-- scheduler_config.py
+|-- scheduler_engine.py
+|-- scheduler_reporting.py
 |-- app.py
 |-- README.md
 |-- LICENSE
@@ -222,6 +233,7 @@ Bulk-input template endpoints:
 |   |-- ethics.html
 |   |-- history.html
 |   |-- history_detail.html
+|   |-- feedback.html
 |   `-- faq.html
 `-- static/
     |-- css/
@@ -232,7 +244,10 @@ Bulk-input template endpoints:
 
 ### Key Files
 
-- `app.py` Flask routes, scheduling logic, SQLite persistence, ethics analysis, exports, and template import/export APIs
+- `app.py` Flask entrypoint, database lifecycle, persistence helpers, and route handlers
+- `scheduler_config.py` app metadata, FAQ items, seeded scenarios, and algorithm definitions
+- `scheduler_engine.py` parsing, scheduling algorithms, conflicts, warnings, and import/export helpers
+- `scheduler_reporting.py` ethics scoring, analytics rollups, and schedule suggestion generation
 - `templates/` multi-page HTML templates for each service area
 - `static/css/style.css` design system, themes, responsiveness, and motion
 - `static/js/app.js` theme behavior, homepage activity carousel, scheduler interactions, and template import flow
@@ -276,6 +291,7 @@ You can skip activation entirely and run the virtual environment interpreter dir
 - Uses Jinja templates plus vanilla JavaScript for the UI layer
 - Includes seeded history so the app is not empty on first launch
 - Keeps ethics evaluation tied directly to archived operational decisions
+- Keeps schedule suggestions tied directly to the stored run data so recommendations are specific instead of generic
 
 ---
 
