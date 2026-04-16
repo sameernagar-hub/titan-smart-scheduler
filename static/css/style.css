@@ -89,12 +89,19 @@ img { max-width: 100%; display: block; }
 .site-footer { position: relative; z-index: 1; }
 
 .topbar {
-  display: flex;
-  flex-wrap: wrap;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 22px 28px 0;
+}
+
+.topbar-shell {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px 20px;
-  padding: 22px 28px 18px;
+  gap: 18px 22px;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: 28px;
 }
 
 .brand {
@@ -103,6 +110,7 @@ img { max-width: 100%; display: block; }
   gap: 14px;
   text-decoration: none;
   flex: 0 0 auto;
+  min-width: 0;
 }
 
 .brand-mark {
@@ -132,9 +140,12 @@ img { max-width: 100%; display: block; }
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
-  justify-content: flex-end;
-  flex: 1 1 720px;
-  min-width: min(100%, 520px);
+  justify-content: center;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 2px;
+  scrollbar-width: thin;
 }
 
 .main-nav a,
@@ -166,6 +177,7 @@ textarea,
   border-radius: 999px;
   background: var(--panel-2);
   text-decoration: none;
+  white-space: nowrap;
 }
 
 .main-nav a.active {
@@ -178,8 +190,9 @@ textarea,
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  margin-left: auto;
   flex: 0 0 auto;
+  justify-self: end;
+  min-width: 0;
 }
 
 .theme-picker span { color: var(--muted); font-size: 0.9rem; }
@@ -203,6 +216,8 @@ textarea,
   max-width: 1400px;
   margin: 0 auto;
   padding: 8px 28px 36px;
+  display: grid;
+  gap: 24px;
 }
 
 .glass {
@@ -270,9 +285,12 @@ body.page-ready .page-shell > * {
 .stats-grid { display: grid; gap: 18px; }
 
 .hero-metrics { grid-template-columns: repeat(1, 1fr); align-content: start; }
+.stats-band { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+.content-grid { gap: 20px; }
 .metric-tile {
   position: relative;
   overflow: hidden;
+  min-width: 0;
 }
 .metric-tile::after {
   content: "";
@@ -375,6 +393,32 @@ body.page-ready .page-shell > * {
 
 .section-head { margin-bottom: 12px; }
 .section-head h2 { margin: 0; font-size: 2rem; }
+.page-intro,
+.table-card,
+.chart-card,
+.feature-card,
+.spotlight-card,
+.activity-stage,
+.report-preview-card,
+.footer-card,
+.panel,
+.card { min-width: 0; }
+.panel {
+  display: grid;
+  gap: 20px;
+  align-content: start;
+}
+.panel-heading,
+.section-head {
+  display: grid;
+  gap: 10px;
+}
+.panel-heading h2,
+.section-head h1,
+.section-head h2,
+.card-title-row h3 {
+  overflow-wrap: anywhere;
+}
 .card-top { display: flex; justify-content: space-between; gap: 16px; align-items: start; }
 .card-title-row,
 .calendar-toolbar {
@@ -499,7 +543,7 @@ body.page-ready .page-shell > * {
 
 .workspace {
   display: grid;
-  grid-template-columns: minmax(380px, 0.92fr) minmax(600px, 1.08fr);
+  grid-template-columns: minmax(0, 430px) minmax(0, 1fr);
   gap: 24px;
   align-items: start;
 }
@@ -550,12 +594,16 @@ body.page-ready .page-shell > * {
 .row { grid-template-columns: 1fr 1fr; }
 .row-3 { grid-template-columns: repeat(3, 1fr); }
 .dual-grid { grid-template-columns: 1.15fr 0.85fr; }
-.luxe-stats { grid-template-columns: repeat(6, 1fr); margin-bottom: 18px; }
+.luxe-stats { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-bottom: 18px; }
 .calendar-grid { grid-template-columns: repeat(7, 1fr); }
 
+label {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
 label span {
-  display: block;
-  margin-bottom: 8px;
   font-size: 0.92rem;
   font-weight: 700;
 }
@@ -629,6 +677,11 @@ textarea { resize: vertical; min-height: 90px; }
 .calendar-chip,
 .algorithm-card { padding: 16px; border-radius: 20px; background: var(--panel-2); }
 .student-card,
+.shift-card {
+  display: grid;
+  gap: 14px;
+}
+.student-card,
 .shift-card,
 .list-item,
 .assignment-pill,
@@ -656,6 +709,7 @@ textarea { resize: vertical; min-height: 90px; }
 .results-rail {
   display: grid;
   gap: 18px;
+  min-width: 0;
 }
 .results-stage {
   display: grid;
@@ -692,6 +746,9 @@ textarea { resize: vertical; min-height: 90px; }
   gap: 12px;
   align-items: center;
 }
+.bar-row.stacked {
+  grid-template-columns: minmax(0, 1.6fr) minmax(140px, 2fr) auto;
+}
 .bar-copy { display: grid; gap: 4px; }
 .bar-copy span { color: var(--muted); font-size: 0.88rem; }
 .bar-track { height: 12px; border-radius: 999px; overflow: hidden; background: rgba(255, 255, 255, 0.08); }
@@ -704,6 +761,10 @@ textarea { resize: vertical; min-height: 90px; }
 .danger-left { border-left: 4px solid var(--danger); }
 .warn-left { border-left: 4px solid var(--warn); }
 .assignment-pill { display: grid; grid-template-columns: 1.1fr 1fr 1fr; gap: 14px; }
+.assignment-pill > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
 .assignment-pill.conflict,
 .calendar-chip.conflict { border: 1px solid color-mix(in srgb, var(--danger) 60%, transparent); }
 .schedule-list {
@@ -720,6 +781,7 @@ textarea { resize: vertical; min-height: 90px; }
 .calendar-day { min-height: 180px; }
 .calendar-day h4 { margin-top: 0; }
 .calendar-chip { margin-bottom: 8px; }
+.calendar-chip:last-child { margin-bottom: 0; }
 .hint,
 .empty-state { color: var(--muted); }
 .empty-state {
@@ -1012,6 +1074,10 @@ textarea:focus-visible {
 }
 
 @media (max-width: 1200px) {
+  .topbar-shell {
+    grid-template-columns: 1fr;
+    justify-items: start;
+  }
   .hero-panel,
   .workspace,
   .results-layout,
@@ -1020,10 +1086,8 @@ textarea:focus-visible {
   .showcase-grid,
   .dual-grid,
   .site-footer { grid-template-columns: 1fr; }
-  .topbar { align-items: stretch; }
   .main-nav { justify-content: flex-start; }
-  .theme-picker { margin-left: 0; align-self: flex-start; }
-  .luxe-stats { grid-template-columns: repeat(3, 1fr); }
+  .theme-picker { justify-self: start; align-self: flex-start; }
   .calendar-grid { grid-template-columns: repeat(2, 1fr); }
   .coverage-row,
   .load-row { grid-template-columns: 1fr; }
@@ -1033,6 +1097,7 @@ textarea:focus-visible {
   .page-shell,
   .topbar,
   .site-footer { padding-left: 18px; padding-right: 18px; }
+  .topbar-shell { padding: 16px; }
   .grid-two,
   .row,
   .row-3,

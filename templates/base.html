@@ -21,30 +21,32 @@
   <div class="site-bg site-bg-a"></div>
   <div class="site-bg site-bg-b"></div>
   <header class="topbar">
-    <a class="brand" href="{{ url_for('home') }}">
-      <span class="brand-mark">TS</span>
-      <span>
-        <strong>Titan Scheduler</strong>
-        <small>Service Suite</small>
-      </span>
-    </a>
-    <nav class="main-nav" aria-label="Main navigation">
-      <a href="{{ url_for('home') }}" class="{% if page_name == 'home' %}active{% endif %}">Home</a>
-      <a href="{{ url_for('services_page') }}" class="{% if page_name == 'services' %}active{% endif %}">Services</a>
-      <a href="{{ url_for('scheduler_page') }}" class="{% if page_name == 'scheduler' %}active{% endif %}">Scheduler</a>
-      <a href="{{ url_for('analytics_page') }}" class="{% if page_name == 'analytics' %}active{% endif %}">Analytics</a>
-      <a href="{{ url_for('reports_page') }}" class="{% if page_name == 'reports' %}active{% endif %}">Reports</a>
-      <a href="{{ url_for('ethics_page') }}" class="{% if page_name == 'ethics' %}active{% endif %}">Ethics</a>
-      <a href="{{ url_for('history_page') }}" class="{% if page_name == 'history' %}active{% endif %}">History</a>
-      <a href="{{ url_for('feedback_page') }}" class="{% if page_name == 'feedback' %}active{% endif %}">Feedback</a>
-      <a href="{{ url_for('faq_page') }}" class="{% if page_name == 'faq' %}active{% endif %}">FAQ</a>
-    </nav>
-    <div class="theme-picker" role="group" aria-label="Theme selection">
-      <span>Theme</span>
-      <div class="theme-switcher" id="themePicker">
-        <button class="theme-chip active" type="button" data-theme="nightfall">Nightfall</button>
-        <button class="theme-chip" type="button" data-theme="champagne">Champagne</button>
-        <button class="theme-chip" type="button" data-theme="lagoon">Lagoon</button>
+    <div class="topbar-shell glass">
+      <a class="brand" href="{{ url_for('home') }}">
+        <span class="brand-mark">TS</span>
+        <span>
+          <strong>Titan Scheduler</strong>
+          <small>Service Suite</small>
+        </span>
+      </a>
+      <nav class="main-nav" aria-label="Main navigation">
+        <a href="{{ url_for('home') }}" class="{% if page_name == 'home' %}active{% endif %}">Home</a>
+        <a href="{{ url_for('services_page') }}" class="{% if page_name == 'services' %}active{% endif %}">Services</a>
+        <a href="{{ url_for('scheduler_page') }}" class="{% if page_name == 'scheduler' %}active{% endif %}">Scheduler</a>
+        <a href="{{ url_for('analytics_page') }}" class="{% if page_name == 'analytics' %}active{% endif %}">Analytics</a>
+        <a href="{{ url_for('reports_page') }}" class="{% if page_name == 'reports' %}active{% endif %}">Reports</a>
+        <a href="{{ url_for('ethics_page') }}" class="{% if page_name == 'ethics' %}active{% endif %}">Ethics</a>
+        <a href="{{ url_for('history_page') }}" class="{% if page_name == 'history' %}active{% endif %}">History</a>
+        <a href="{{ url_for('feedback_page') }}" class="{% if page_name == 'feedback' %}active{% endif %}">Feedback</a>
+        <a href="{{ url_for('faq_page') }}" class="{% if page_name == 'faq' %}active{% endif %}">FAQ</a>
+      </nav>
+      <div class="theme-picker" role="group" aria-label="Theme selection">
+        <span>Theme</span>
+        <div class="theme-switcher" id="themePicker">
+          <button class="theme-chip active" type="button" data-theme="nightfall">Nightfall</button>
+          <button class="theme-chip" type="button" data-theme="champagne">Champagne</button>
+          <button class="theme-chip" type="button" data-theme="lagoon">Lagoon</button>
+        </div>
       </div>
     </div>
   </header>
