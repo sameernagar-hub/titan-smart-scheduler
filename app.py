@@ -50,6 +50,42 @@ from scheduler_reporting import (
 app = Flask(__name__)
 
 
+def format_timestamp(value: str) -> str:
+    try:
+        normalized = value.replace("Z", "+00:00")
+        parsed = datetime.fromisoformat(normalized)
+    except ValueError:
+        return value
+    return parsed.strftime("%b %d, %Y at %I:%M %p")
+
+
+def canonical_algorithm(value: str) -> str:
+    return "round_robin" if value == "standard" else value
+
+
+def cleanup_transient_runs() -> None:
+    db = get_db()
+    transient_names = {
+        "Ethics Suggestion Verification",
+        "Polish Verification",
+        "Refactor Verification",
+        "Priority Suggestion Verification",
+        "Smoke Test Plan",
+        "Verification",
+    }
+    rows = db.execute(
+        "SELECT id FROM schedule_runs WHERE name IN ({})".format(",".join("?" for _ in transient_names)),
+        tuple(sorted(transient_names)),
+    ).fetchall()
+    if not rows:
+        return
+    run_ids = [row["id"] for row in rows]
+    placeholders = ",".join("?" for _ in run_ids)
+    db.execute(f"DELETE FROM assignments WHERE run_id IN ({placeholders})", run_ids)
+    db.execute(f"DELETE FROM schedule_runs WHERE id IN ({placeholders})", run_ids)
+    db.commit()
+
+
 def get_db() -> sqlite3.Connection:
     if "db" not in g:
         connection = sqlite3.connect(DATABASE_PATH)
@@ -143,7 +179,7 @@ def get_run_detail(run_id: int) -> Optional[Dict[str, Any]]:
     warnings = json.loads(run["warnings_json"])
     conflicts = json.loads(run["conflicts_json"])
     stats = json.loads(run["stats_json"])
-    algorithm = run_dict.get("algorithm") or "round_robin"
+    algorithm = canonical_algorithm(run_dict.get("algorithm") or "round_robin")
     stats.setdefault("algorithm", algorithm)
     stats.setdefault("algorithm_label", algorithm_label(algorithm))
     stats.setdefault("conflict_count", len(conflicts))
@@ -155,6 +191,7 @@ def get_run_detail(run_id: int) -> Optional[Dict[str, Any]]:
     )
     run_dict["mode_label"] = mode_label(run_dict["mode"])
     run_dict["algorithm_label"] = algorithm_label(algorithm)
+    run_dict["created_at_display"] = format_timestamp(run_dict["created_at"])
     typed_assignments = [
         ShiftAssignment(
             shift_instance_id=item["shift_instance_id"],
@@ -338,6 +375,28 @@ def backfill_ethics_data() -> None:
     db.commit()
 
 
+def unique_recent_runs(runs: List[Dict[str, Any]], limit: int = 4) -> List[Dict[str, Any]]:
+    suppressed_names = {
+        "custom service run",
+        "test",
+        "verification",
+    }
+    seen_names = set()
+    items = []
+    for allow_suppressed in (False, True):
+        for run in runs:
+            name_key = run["name"].strip().lower()
+            if not allow_suppressed and name_key in suppressed_names:
+                continue
+            if name_key in seen_names:
+                continue
+            seen_names.add(name_key)
+            items.append(run)
+            if len(items) >= limit:
+                return items
+    return items
+
+
 def init_db() -> None:
     DATABASE_PATH.parent.mkdir(parents=True, exist_ok=True)
     with sqlite3.connect(DATABASE_PATH) as db:
@@ -407,6 +466,7 @@ def init_db() -> None:
             db.commit()
 
     with app.app_context():
+        cleanup_transient_runs()
         seed_history_data()
         backfill_ethics_data()
 
@@ -425,20 +485,21 @@ def inject_global_template_data() -> Dict[str, Any]:
 @app.route("/")
 def home() -> str:
     analytics = service_analytics_snapshot()
+    highlighted_runs = unique_recent_runs(analytics["recent_runs"])
     carousel_items = [
         {
             "eyebrow": "Recent Activity",
             "title": run["name"],
-            "description": f"{run['assignment_count']} primary assignments, {run['backup_count']} backups, {run['coverage_ready_percent']}% coverage ready with {run['algorithm_label']}.",
+            "description": f"{run['assignment_count']} primary assignments, {run['backup_count']} backups, {run['coverage_ready_percent']}% coverage readiness using {run['algorithm_label']}. Logged {run['created_at_display']}.",
             "href": f"/history/{run['id']}",
             "cta": "Open run",
         }
-        for run in analytics["recent_runs"][:4]
+        for run in highlighted_runs
     ] or [
         {
             "eyebrow": "Live Workspace",
-            "title": "Weekly floor coverage planning",
-            "description": "Create manager-ready schedules with backup coverage and a clean approval trail.",
+            "title": "Weekly coverage planning",
+            "description": "Build a staffing plan, review its impact, and keep a record that leaders can revisit later.",
             "href": "/scheduler",
             "cta": "Plan shifts",
         }
@@ -448,7 +509,7 @@ def home() -> str:
         page_name="home",
         analytics=analytics,
         service_cards=summarize_services(),
-        featured_run=analytics["recent_runs"][0] if analytics["recent_runs"] else None,
+        featured_run=highlighted_runs[0] if highlighted_runs else None,
         algorithm_spotlight=analytics["algorithm_performance"][0] if analytics["algorithm_performance"] else None,
         carousel_items=carousel_items,
     )
@@ -491,7 +552,8 @@ def history_page() -> str:
         item["ethics_overall_status"] = ethics.get("overall_status", "Not rated")
         item["ethics_overall_score"] = ethics.get("overall_score", 0)
         item["mode_label"] = mode_label(item["mode"])
-        item["algorithm_label"] = algorithm_label(item["algorithm"])
+        item["algorithm_label"] = algorithm_label(canonical_algorithm(item["algorithm"]))
+        item["created_at_display"] = format_timestamp(item["created_at"])
         history_runs.append(item)
     return render_template(
         "history.html",

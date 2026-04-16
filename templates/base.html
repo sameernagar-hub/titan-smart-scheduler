@@ -4,6 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Titan Smart Scheduler Service{% endblock %}</title>
+  <script>
+    try {
+      const storedTheme = localStorage.getItem("titan-theme") || "nightfall";
+      document.documentElement.setAttribute("data-theme", storedTheme);
+    } catch (error) {
+      document.documentElement.setAttribute("data-theme", "nightfall");
+    }
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet">
@@ -48,7 +56,7 @@
     <div class="footer-card glass">
       <span class="eyebrow">Product Navigation</span>
       <strong>Titan Smart Scheduler Service</strong>
-      <p>Ethical staffing, premium reporting, contribution-ready links, and a smoother way to move across the suite.</p>
+      <p>Ethical staffing, reviewable reporting, and a clearer way to move from planning to analysis to archival review.</p>
       <div class="footer-links">
         {% for item in footer_links %}
           <a href="{{ item.href }}">{{ item.title }}</a>

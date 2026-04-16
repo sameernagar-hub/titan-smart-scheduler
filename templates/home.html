@@ -4,8 +4,8 @@
 <section class="hero-panel glass">
   <div>
     <p class="eyebrow">Campus Operations Workspace</p>
-    <h1>Coordinate student staffing like a real coverage desk.</h1>
-    <p class="lede">Build shift plans, track backup coverage, review earlier assignments, and keep leadership-facing reporting in one place without losing the day-to-day practicality managers need.</p>
+    <h1>Coordinate student staffing with clarity, fairness, and accountability.</h1>
+    <p class="lede">Build shift plans, preserve academic protections, track backup readiness, and keep a documented record that supervisors can explain with confidence.</p>
     <div class="cta-row">
       <a class="primary-btn" href="{{ url_for('scheduler_page') }}">Open Planning Desk</a>
       <a class="ghost-btn" href="{{ url_for('history_page') }}">View Coverage Archive</a>
@@ -30,7 +30,7 @@
 <section class="glass activity-stage">
   <div class="section-head">
     <h2>Live Activity Board</h2>
-    <p>A rotating view of recent planning activity and operational highlights.</p>
+    <p>A rotating snapshot of distinct staffing runs and the operational signals they produced.</p>
   </div>
   <div class="carousel" id="homeCarousel">
     {% for item in carousel_items %}
@@ -52,7 +52,7 @@
 <section class="content-grid">
   <div class="section-head">
     <h2>Core Workspaces</h2>
-    <p>Each area is shaped around a real operational task instead of a generic feature list.</p>
+    <p>Each area supports a specific management responsibility, from planning coverage to reviewing the consequences afterward.</p>
   </div>
   <div class="card-grid">
     {% for service in service_cards %}
@@ -74,20 +74,20 @@
 <section class="showcase-grid">
   <article class="glass spotlight-card">
     <div class="section-head">
-      <h2>What Managers Actually Get</h2>
-      <p>Tools for planning, reporting, and explaining staffing choices after the schedule is made.</p>
+      <h2>What Leadership Can Defend</h2>
+      <p>Tools for planning, documenting, and explaining staffing choices after the schedule is made.</p>
     </div>
     <ul class="plain-list">
-      <li>A scheduling desk that balances hours, classes, and shift preferences.</li>
-      <li>A stored archive of past plans for handoff, review, and presentation.</li>
-      <li>A reporting dashboard for fairness, alerts, and backup readiness.</li>
-      <li>A built-in help center so every metric and service has context.</li>
+      <li>A planning desk that balances shift demand, class commitments, and staffing resilience.</li>
+      <li>An archive that preserves what was decided, when it was decided, and how it performed.</li>
+      <li>A reporting dashboard that surfaces fairness, warning pressure, and backup readiness.</li>
+      <li>An ethics review layer that helps turn scheduling into a reasoned management decision rather than a black box.</li>
     </ul>
   </article>
   <article class="glass spotlight-card">
     <div class="section-head">
       <h2>Algorithm Spotlight</h2>
-      <p>Recent runs also surface which planning strategy is delivering the strongest coverage story.</p>
+      <p>Recent runs also reveal which planning strategy is producing the strongest operational outcome.</p>
     </div>
     {% if algorithm_spotlight %}
       <div class="run-preview">

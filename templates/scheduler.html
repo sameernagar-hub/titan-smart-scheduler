@@ -4,7 +4,7 @@
 <section class="page-intro glass">
   <div class="section-head">
     <h1>Shift Planning Desk</h1>
-    <p>Build a staffing plan, save it automatically, and review the result in list, calendar, and backup-coverage views.</p>
+    <p>Build a staffing plan, save it automatically, and review the result in a structured workspace instead of a long scrolling dump.</p>
   </div>
   <div class="inline-badges">
     <span class="badge soft">Auto-saves to history</span>
@@ -23,7 +23,7 @@
           <div>This workspace creates a new staffing plan, stores it in the archive, and refreshes reporting automatically.</div>
         </details>
       </div>
-      <p>Choose a planning mode, describe the student context, and generate a premium coverage plan with the algorithm profile that best fits the moment.</p>
+      <p>Choose a planning mode, describe the student context, and generate a coverage plan with the algorithm profile that best fits the moment.</p>
     </div>
 
     <label>
@@ -60,7 +60,7 @@
       <div class="algorithm-grid">
         {% for key, item in algorithms.items() %}
           {% if key != 'standard' %}
-            <article class="algorithm-card">
+            <article class="algorithm-card" data-algorithm="{{ key }}">
               <span class="eyebrow">{{ item.family }}</span>
               <strong>{{ item.label }}</strong>
               <p>{{ item.summary }}</p>
@@ -121,63 +121,71 @@
           <div>Results show the latest generated plan only. After generation, the same plan is also available in the archive.</div>
         </details>
       </div>
-      <p>Coverage plans, staffing alerts, workload balance, and a clean manager view.</p>
+      <p>Coverage plans, staffing alerts, workload balance, and a clearer manager view.</p>
     </div>
 
-    <div class="stats-grid luxe-stats">
-      <article class="stat-card"><span class="label">Students</span><strong id="statStudents">0</strong></article>
-      <article class="stat-card"><span class="label">Primary Assignments</span><strong id="statAssignments">0</strong></article>
-      <article class="stat-card"><span class="label">Backup Assignments</span><strong id="statBackups">0</strong></article>
-      <article class="stat-card"><span class="label">Coverage Ready</span><strong id="statCoverage">0%</strong></article>
-      <article class="stat-card"><span class="label">Conflict Free</span><strong id="statConflictFree">0%</strong></article>
-      <article class="stat-card"><span class="label">Avg / Student</span><strong id="statAverage">0</strong></article>
-      <article class="stat-card"><span class="label">Fairness Spread</span><strong id="statSpread">0</strong></article>
-      <article class="stat-card"><span class="label">Algorithm</span><strong id="statAlgorithm">-</strong></article>
-    </div>
+    <div class="results-layout">
+      <div class="results-main">
+        <div id="historyLinkBox" class="history-banner hidden"></div>
 
-    <div id="historyLinkBox" class="history-banner hidden"></div>
+        <div class="stats-grid luxe-stats">
+          <article class="stat-card"><span class="label">Students</span><strong id="statStudents">0</strong></article>
+          <article class="stat-card"><span class="label">Primary Assignments</span><strong id="statAssignments">0</strong></article>
+          <article class="stat-card"><span class="label">Backup Assignments</span><strong id="statBackups">0</strong></article>
+          <article class="stat-card"><span class="label">Coverage Ready</span><strong id="statCoverage">0%</strong></article>
+          <article class="stat-card"><span class="label">Conflict Free</span><strong id="statConflictFree">0%</strong></article>
+          <article class="stat-card"><span class="label">Avg / Student</span><strong id="statAverage">0</strong></article>
+          <article class="stat-card"><span class="label">Fairness Spread</span><strong id="statSpread">0</strong></article>
+          <article class="stat-card"><span class="label">Algorithm</span><strong id="statAlgorithm">-</strong></article>
+        </div>
 
-    <section class="card inset hidden" id="algorithmInsightBox">
-      <div class="card-title-row"><h3>Algorithm readout</h3></div>
-      <div id="algorithmInsightContent" class="algorithm-readout"></div>
-    </section>
+        <section class="card inset hidden" id="algorithmInsightBox">
+          <div class="card-title-row"><h3>Algorithm readout</h3></div>
+          <div id="algorithmInsightContent" class="algorithm-readout"></div>
+        </section>
 
-    <div class="dual-grid">
-      <section class="card inset">
-        <div class="card-title-row"><h3>Workload and risk</h3></div>
-        <div id="workloadBars" class="bars"></div>
-      </section>
-      <section class="card inset hidden" id="conflictBox">
-        <div class="card-title-row"><h3>Academic conflicts</h3></div>
-        <div id="conflictList" class="list-stack"></div>
-      </section>
-    </div>
+        <section class="card inset results-stage">
+          <div class="card-title-row">
+            <h3>Schedule output</h3>
+            <div class="segmented compact-switch" id="resultSwitch">
+              <button class="segment active" data-view="list" type="button">List View</button>
+              <button class="segment" data-view="calendar" type="button">Calendar View</button>
+            </div>
+          </div>
+          <div class="results-frame">
+            <div id="scheduleList" class="schedule-list empty-state">Generate a staffing plan to see the results.</div>
 
-    <section class="card inset hidden" id="warningBox">
-      <div class="card-title-row"><h3>Ethical warnings</h3></div>
-      <div id="warningList" class="list-stack"></div>
-    </section>
-
-    <section class="card inset hidden" id="calloutBox">
-      <div class="card-title-row"><h3>Callout recovery plan</h3></div>
-      <div id="calloutList" class="list-stack"></div>
-    </section>
-
-    <div class="segmented" id="resultSwitch">
-      <button class="segment active" data-view="list" type="button">List View</button>
-      <button class="segment" data-view="calendar" type="button">Calendar View</button>
-    </div>
-
-    <div id="scheduleList" class="schedule-list empty-state">Generate a staffing plan to see the results.</div>
-
-    <section id="calendarPane" class="hidden">
-      <div class="calendar-toolbar">
-        <button id="prevWeekBtn" class="ghost-btn" type="button">Previous Week</button>
-        <strong id="calendarTitle">Week</strong>
-        <button id="nextWeekBtn" class="ghost-btn" type="button">Next Week</button>
+            <section id="calendarPane" class="hidden">
+              <div class="calendar-toolbar">
+                <button id="prevWeekBtn" class="ghost-btn" type="button">Previous Week</button>
+                <strong id="calendarTitle">Week</strong>
+                <button id="nextWeekBtn" class="ghost-btn" type="button">Next Week</button>
+              </div>
+              <div id="calendarGrid" class="calendar-grid"></div>
+            </section>
+          </div>
+        </section>
       </div>
-      <div id="calendarGrid" class="calendar-grid"></div>
-    </section>
+
+      <aside class="results-rail">
+        <section class="card inset">
+          <div class="card-title-row"><h3>Workload and risk</h3></div>
+          <div id="workloadBars" class="bars"></div>
+        </section>
+        <section class="card inset hidden" id="conflictBox">
+          <div class="card-title-row"><h3>Academic conflicts</h3></div>
+          <div id="conflictList" class="list-stack"></div>
+        </section>
+        <section class="card inset hidden" id="warningBox">
+          <div class="card-title-row"><h3>Ethical warnings</h3></div>
+          <div id="warningList" class="list-stack"></div>
+        </section>
+        <section class="card inset hidden" id="calloutBox">
+          <div class="card-title-row"><h3>Callout recovery plan</h3></div>
+          <div id="calloutList" class="list-stack"></div>
+        </section>
+      </aside>
+    </div>
   </section>
 </section>
 {% endblock %}

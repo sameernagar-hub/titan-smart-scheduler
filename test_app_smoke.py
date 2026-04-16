@@ -14,6 +14,7 @@ class AppSmokeTests(unittest.TestCase):
                 self.assertEqual(response.status_code, 200)
 
     def test_generate_and_download_flow(self):
+        run_id = None
         payload = {
             "schedule_name": "Smoke Test Plan",
             "mode": "custom",
@@ -64,6 +65,11 @@ class AppSmokeTests(unittest.TestCase):
         self.assertEqual(self.client.get(f"/history/{run_id}").status_code, 200)
         self.assertEqual(self.client.get(f"/history/{run_id}/download/json").status_code, 200)
         self.assertEqual(self.client.get(f"/history/{run_id}/download/csv").status_code, 200)
+        with app.app.app_context():
+            db = app.get_db()
+            db.execute("DELETE FROM assignments WHERE run_id = ?", (run_id,))
+            db.execute("DELETE FROM schedule_runs WHERE id = ?", (run_id,))
+            db.commit()
 
 
 if __name__ == "__main__":

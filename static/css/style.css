@@ -400,22 +400,33 @@ body.page-ready .page-shell > * {
   background: var(--panel-2);
 }
 
-.activity-stage { margin-bottom: 24px; overflow: visible; }
-.carousel { position: relative; }
+.activity-stage { margin-bottom: 24px; overflow: hidden; }
+.carousel { position: relative; min-height: 230px; }
 .carousel-slide {
   display: none;
+  min-height: 200px;
   padding: 22px;
   border-radius: 24px;
+  overflow: hidden;
   background: linear-gradient(135deg, color-mix(in srgb, var(--brand) 14%, transparent), color-mix(in srgb, var(--brand-2) 10%, transparent));
   border: 1px solid color-mix(in srgb, var(--text) 10%, transparent);
   box-shadow: 0 18px 40px color-mix(in srgb, var(--shadow) 30%, transparent);
 }
 .carousel-slide.active {
-  display: block;
+  display: grid;
+  gap: 12px;
+  align-content: start;
   animation: carouselFade 320ms ease;
 }
 .carousel-slide h3 { margin: 0.4rem 0; font-size: clamp(1.6rem, 3vw, 2.4rem); }
-.carousel-slide p { max-width: 680px; color: var(--muted); }
+.carousel-slide p {
+  max-width: 680px;
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.carousel-slide .text-link { margin-top: auto; }
 .carousel-dots { display: flex; gap: 10px; margin-top: 16px; }
 .carousel-dot {
   width: 12px;
@@ -482,7 +493,7 @@ body.page-ready .page-shell > * {
 
 .workspace {
   display: grid;
-  grid-template-columns: minmax(360px, 460px) 1fr;
+  grid-template-columns: minmax(380px, 0.92fr) minmax(600px, 1.08fr);
   gap: 24px;
   align-items: start;
 }
@@ -596,6 +607,37 @@ textarea { resize: vertical; min-height: 90px; }
   border: 1px solid color-mix(in srgb, var(--good) 40%, transparent);
 }
 .history-banner a { text-underline-offset: 3px; }
+.results-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(300px, 0.8fr);
+  gap: 20px;
+  align-items: start;
+}
+.results-main,
+.results-rail {
+  display: grid;
+  gap: 18px;
+}
+.results-stage {
+  display: grid;
+  gap: 16px;
+}
+.compact-switch {
+  margin-bottom: 0;
+}
+.results-frame {
+  min-height: 560px;
+  max-height: 74vh;
+  overflow: auto;
+  padding-right: 4px;
+}
+.results-frame::-webkit-scrollbar {
+  width: 10px;
+}
+.results-frame::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--brand) 40%, transparent);
+}
 
 .stat-card .label {
   display: block;
@@ -625,6 +667,16 @@ textarea { resize: vertical; min-height: 90px; }
 .assignment-pill { display: grid; grid-template-columns: 1.1fr 1fr 1fr; gap: 14px; }
 .assignment-pill.conflict,
 .calendar-chip.conflict { border: 1px solid color-mix(in srgb, var(--danger) 60%, transparent); }
+.schedule-list {
+  align-content: start;
+}
+.day-card {
+  display: grid;
+  gap: 12px;
+}
+.day-card h3 {
+  margin: 0;
+}
 
 .calendar-day { min-height: 180px; }
 .calendar-day h4 { margin-top: 0; }
@@ -719,6 +771,14 @@ textarea { resize: vertical; min-height: 90px; }
   gap: 10px;
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--panel-3) 75%, transparent), transparent),
+    var(--panel-2);
+}
+.algorithm-card.active {
+  transform: translateY(-4px) scale(1.01);
+  border-color: color-mix(in srgb, var(--brand) 65%, transparent);
+  box-shadow: 0 22px 60px color-mix(in srgb, var(--brand) 18%, transparent);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--brand) 16%, transparent), transparent),
     var(--panel-2);
 }
 .algorithm-card p,
@@ -915,6 +975,7 @@ textarea:focus-visible {
 @media (max-width: 1200px) {
   .hero-panel,
   .workspace,
+  .results-layout,
   .analytics-grid,
   .showcase-grid,
   .dual-grid,
@@ -934,6 +995,7 @@ textarea:focus-visible {
   .row,
   .row-3,
   .luxe-stats,
+  .results-layout,
   .analytics-grid,
   .showcase-grid,
   .card-grid,
@@ -947,6 +1009,12 @@ textarea:focus-visible {
   .card-title-row,
   .calendar-toolbar { width: 100%; }
   .calendar-toolbar { align-items: stretch; flex-direction: column; }
+  .results-frame {
+    min-height: auto;
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
+  }
   .theme-picker { width: 100%; justify-content: space-between; }
   .theme-switcher { justify-content: flex-end; }
 }

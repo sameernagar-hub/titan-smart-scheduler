@@ -10,7 +10,7 @@
         <div>Every generated staffing plan is stored here so teams can review outcomes, revisit staffing evidence, and compare previous plans.</div>
       </details>
     </div>
-    <p>Use this page to inspect previous plans and the seeded examples loaded on first launch.</p>
+    <p>Use this page to inspect previous plans, compare their outcomes, and keep the timing of each decision visible.</p>
   </div>
 </section>
 
@@ -27,7 +27,7 @@
       <thead>
         <tr>
           <th>Run Name</th>
-          <th>Date</th>
+          <th>Logged</th>
           <th>Mode</th>
           <th>Algorithm</th>
           <th>Assignments</th>
@@ -42,7 +42,7 @@
         {% for run in history_runs %}
           <tr>
             <td>{{ run.name }}</td>
-            <td>{{ run.created_at[:10] }}</td>
+            <td>{{ run.created_at_display }}</td>
             <td>{{ run.mode_label }}</td>
             <td>{{ run.algorithm_label }}</td>
             <td>{{ run.assignment_count }}</td>

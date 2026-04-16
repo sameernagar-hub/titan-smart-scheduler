@@ -2,10 +2,23 @@ from __future__ import annotations
 
 import json
 from collections import defaultdict
+from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from scheduler_config import ETHICS_THEORIES
 from scheduler_engine import algorithm_family, algorithm_label, algorithm_summary, build_callout_plan, mode_label, shift_bucket, ShiftAssignment
+
+
+def canonical_algorithm(value: str) -> str:
+    return "round_robin" if value == "standard" else value
+
+
+def format_timestamp(value: str) -> str:
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return value
+    return parsed.strftime("%b %d, %Y at %I:%M %p")
 
 
 def theory_status(score: int) -> str:
@@ -333,13 +346,13 @@ def summarize_services() -> List[Dict[str, str]]:
     return [
         {
             "title": "Shift Planning Desk",
-            "summary": "Build weekly staffing plans around class schedules, preferred shift windows, and fair distribution of hours.",
+            "summary": "Build weekly staffing plans around class schedules, preferred shift windows, and an accountable distribution of hours.",
             "href": "/scheduler",
             "help": "Use this workspace to create a new staffing plan for the week, including class-aware assignments and backup coverage.",
         },
         {
             "title": "Coverage Archive",
-            "summary": "Review past staffing plans, compare coverage decisions, and revisit earlier assignments without rebuilding them.",
+            "summary": "Review past staffing plans, compare coverage decisions, and revisit earlier assignments with their supporting context intact.",
             "href": "/history",
             "help": "Every run is stored automatically so managers can trace what was assigned, when it was created, and how coverage was handled.",
         },
@@ -363,7 +376,7 @@ def summarize_services() -> List[Dict[str, str]]:
         },
         {
             "title": "Feedback Lounge",
-            "summary": "Capture polished feedback, feature ideas, and contribution interest in a dedicated premium space.",
+            "summary": "Capture feedback, feature ideas, and contribution interest in a dedicated channel inside the product.",
             "href": "/feedback",
             "help": "Use this page to collect reactions, feature requests, and contribution interest without leaving the product experience.",
         },
@@ -400,12 +413,14 @@ def build_service_analytics_snapshot(rows: List[Any]) -> Dict[str, Any]:
     for row in rows:
         row_dict = dict(row)
         row_dict["mode_label"] = mode_label(row["mode"])
-        row_dict["algorithm_label"] = algorithm_label(row["algorithm"])
-        row_dict["algorithm_family"] = algorithm_family(row["algorithm"])
+        normalized_algorithm = canonical_algorithm(row["algorithm"])
+        row_dict["algorithm_label"] = algorithm_label(normalized_algorithm)
+        row_dict["algorithm_family"] = algorithm_family(normalized_algorithm)
         ethics = json.loads(row["ethics_json"] or "{}")
         row_dict["ethics_score"] = ethics.get("overall_score", 0)
+        row_dict["created_at_display"] = format_timestamp(row["created_at"])
         recent.append(row_dict)
-        key = row["algorithm"]
+        key = normalized_algorithm
         bucket = algorithm_rollup.setdefault(
             key,
             {
@@ -450,7 +465,7 @@ def build_service_analytics_snapshot(rows: List[Any]) -> Dict[str, Any]:
     algorithm_performance.sort(key=lambda item: (-item["avg_coverage"], item["avg_conflicts"], item["label"]))
     return {
         "summary": summary,
-        "recent_runs": recent[:5],
+        "recent_runs": recent[:10],
         "warning_trend": warning_trend,
         "mode_mix": [{"name": key, "value": value} for key, value in mode_mix.items()],
         "algorithm_mix": [{"name": key, "value": value} for key, value in algorithm_mix.items()],

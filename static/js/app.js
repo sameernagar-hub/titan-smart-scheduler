@@ -165,6 +165,12 @@ function initializeSchedulerPage() {
     statAlgorithm: document.getElementById("statAlgorithm"),
   };
 
+  function syncAlgorithmShowcase() {
+    document.querySelectorAll(".algorithm-card[data-algorithm]").forEach((card) => {
+      card.classList.toggle("active", card.dataset.algorithm === els.algorithm.value);
+    });
+  }
+
   function flash(message, type = "success") {
     els.flashBox.textContent = message;
     els.flashBox.className = `flash ${type}`;
@@ -267,6 +273,7 @@ function initializeSchedulerPage() {
     els.algorithm.value = payload.algorithm || DEFAULT_ALGORITHM;
     els.weeks.value = payload.weeks || DEFAULT_WEEKS;
     switchMode(payload.mode || DEFAULT_MODE);
+    syncAlgorithmShowcase();
 
     els.studentsContainer.innerHTML = "";
     (payload.students || []).forEach((student) => {
@@ -551,6 +558,7 @@ function initializeSchedulerPage() {
       renderList();
       renderCalendar();
       renderHistoryLink();
+      document.getElementById("scheduleList").scrollIntoView({ behavior: "smooth", block: "start" });
       flash(data.conflicts.length ? `Plan saved with ${data.conflicts.length} academic conflict flag(s).` : "Plan saved with no academic conflicts.", data.conflicts.length ? "error" : "success");
     } catch (error) {
       flash(error.message, "error");
@@ -566,6 +574,7 @@ function initializeSchedulerPage() {
     switchMode(DEFAULT_MODE);
     els.algorithm.value = DEFAULT_ALGORITHM;
     els.weeks.value = DEFAULT_WEEKS;
+    syncAlgorithmShowcase();
     state.assignments = [];
     state.conflicts = [];
     state.warnings = [];
@@ -604,6 +613,7 @@ function initializeSchedulerPage() {
   });
   els.addStudentBtn.addEventListener("click", () => els.studentsContainer.appendChild(createStudentCard()));
   els.addShiftBtn.addEventListener("click", () => els.shiftTemplates.appendChild(createShiftCard()));
+  els.algorithm.addEventListener("change", syncAlgorithmShowcase);
   els.generateBtn.addEventListener("click", generateSchedule);
   els.resetBtn.addEventListener("click", resetAll);
   els.templateUpload.addEventListener("change", async () => {
@@ -621,6 +631,7 @@ function initializeSchedulerPage() {
   seedInitialCards();
   switchMode(DEFAULT_MODE);
   els.algorithm.value = DEFAULT_ALGORITHM;
+  syncAlgorithmShowcase();
   switchResultView("list");
 }
 

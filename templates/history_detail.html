@@ -4,7 +4,7 @@
 <section class="page-intro glass">
   <div class="section-head">
     <h1>{{ detail.run.name }}</h1>
-    <p>{{ detail.run.mode_label }} plan using {{ detail.run.algorithm_label }} stored on {{ detail.run.created_at[:10] }}.</p>
+    <p>{{ detail.run.mode_label }} plan using {{ detail.run.algorithm_label }} stored on {{ detail.run.created_at_display }}.</p>
   </div>
   <div class="inline-badges">
     <span class="badge soft">{{ detail.stats.total_assignments }} primary</span>

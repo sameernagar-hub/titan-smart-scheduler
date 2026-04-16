@@ -8,7 +8,7 @@ PROJECT_REPO_URL = "https://github.com/sameernagar-hub/titan-smart-scheduler.git
 AUTHOR_PROFILE = {
     "name": "Sameer Nagar",
     "title": "Builder of Titan Smart Scheduler",
-    "bio": "Designed as an ethics-aware coverage desk that feels more like a polished campus operations product than a class project demo.",
+    "bio": "Designed as an ethics-aware coverage desk that presents scheduling decisions with operational clarity, historical accountability, and academic safeguards.",
 }
 ALGORITHM_META = {
     "circle": {
