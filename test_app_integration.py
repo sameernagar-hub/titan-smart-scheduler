@@ -130,6 +130,45 @@ class AppIntegrationTests(unittest.TestCase):
         finally:
             self._cleanup_run(run_id)
 
+    def test_outcome_builder_generates_and_saves_revision(self):
+        payload = build_input_template()
+        payload["schedule_name"] = "Outcome Builder Verification Run"
+        response = self.client.post("/api/generate", json=payload)
+        self.assertEqual(response.status_code, 200)
+        source_run_id = response.get_json()["run_id"]
+        derived_run_id = None
+
+        try:
+            outcomes = self.client.post(f"/history/{source_run_id}/outcomes", json={"goal": "balanced"})
+            self.assertEqual(outcomes.status_code, 200)
+            outcome_payload = outcomes.get_json()
+            self.assertEqual(outcome_payload["goal"], "balanced")
+            self.assertGreaterEqual(len(outcome_payload["candidates"]), 1)
+
+            candidate_key = outcome_payload["candidates"][0]["key"]
+            saved = self.client.post(
+                f"/history/{source_run_id}/outcomes/{candidate_key}/save",
+                json={"goal": "balanced", "finalize": False},
+            )
+            self.assertEqual(saved.status_code, 200)
+            derived_run_id = saved.get_json()["run_id"]
+            self.assertEqual(self.client.get(saved.get_json()["history_url"]).status_code, 200)
+
+            with app.app.app_context():
+                row = app.get_db().execute(
+                    "SELECT source_run_id, outcome_goal, outcome_label, is_final FROM schedule_runs WHERE id = ?",
+                    (derived_run_id,),
+                ).fetchone()
+                self.assertIsNotNone(row)
+                self.assertEqual(row["source_run_id"], source_run_id)
+                self.assertEqual(row["outcome_goal"], "balanced")
+                self.assertFalse(bool(row["is_final"]))
+                self.assertTrue(row["outcome_label"])
+        finally:
+            if derived_run_id is not None:
+                self._cleanup_run(derived_run_id)
+            self._cleanup_run(source_run_id)
+
 
 if __name__ == "__main__":
     unittest.main()

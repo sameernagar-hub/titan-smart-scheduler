@@ -148,7 +148,7 @@ FAQ_ITEMS = [
     },
     {
         "question": "How does history work?",
-        "answer": "Every generated schedule run is stored automatically so you can review prior assignments, compare analytics, and reuse seeded demo data.",
+        "answer": "Every generated schedule run is stored automatically so you can review prior assignments, compare analytics, reuse seeded demo data, and keep track of Outcome Builder revisions or final accepted schedules.",
     },
     {
         "question": "What is Report Studio?",
@@ -172,11 +172,19 @@ FAQ_ITEMS = [
     },
     {
         "question": "What happens when a plan shows 'Needs review' in the ethics record?",
-        "answer": "The archived run now includes a schedule suggestions section that uses the actual conflict, warning, workload, reliability, preference, and backup-coverage data from that plan to recommend the most useful adjustments first.",
+        "answer": "The archived run includes a schedule suggestions section that uses the actual conflict, warning, workload, reliability, preference, and backup-coverage data from that plan to recommend the most useful adjustments first. From the same detail page, Outcome Builder can then generate revised schedules around the priority you choose.",
     },
     {
         "question": "Are the schedule suggestions generic tips?",
         "answer": "No. Suggestions are built from the stored run itself, so they focus on the students, shifts, conflict patterns, overload risks, and coverage gaps that are actually driving the ethics score down.",
+    },
+    {
+        "question": "What is Outcome Builder?",
+        "answer": "Outcome Builder is the revision workflow inside a saved run. It can generate multiple improved schedule outcomes such as Conflict-Free First, Coverage First, Ethics First, Fairness First, and Balanced Best Fit so the user can compare tradeoffs before saving a revision or accepting a final schedule.",
+    },
+    {
+        "question": "Does Outcome Builder guarantee a perfect schedule?",
+        "answer": "No. Some staffing constraints naturally compete with each other, so Outcome Builder looks for the best feasible revision for the chosen goal. A conflict-free schedule may reduce coverage, while a coverage-first schedule may trade away some fairness or preference matching.",
     },
 ]
 

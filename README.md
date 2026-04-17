@@ -1,6 +1,6 @@
 # Titan Smart Scheduler
 
-Adaptive ethical scheduling platform for student-worker operations, featuring multi-page planning, archived run history, ethics evaluation, algorithm comparison, ethics-driven schedule suggestions, bulk template import, feedback capture, and downloadable schedule exports including dual-renderer PDF reports.
+Adaptive ethical scheduling platform for student-worker operations, featuring multi-page planning, archived run history, ethics evaluation, algorithm comparison, ethics-driven schedule suggestions, Outcome Builder revision flows, bulk template import, feedback capture, and downloadable schedule exports including dual-renderer PDF reports.
 
 ---
 
@@ -15,6 +15,7 @@ It is a working service-style scheduling application that lets you:
 - review fairness, readiness, and alert trends in a separate analytics service
 - evaluate saved plans against major ethical frameworks in a dedicated ethics service
 - generate grounded improvement suggestions when an ethics review needs attention
+- turn a reviewed run into revised or final candidate schedules with Outcome Builder
 - import a prepared planning template instead of filling every field manually
 - export completed plans as JSON or CSV for downstream use
 - compare ReportLab and WeasyPrint output in a dedicated PDF preview studio before downloading reports
@@ -93,6 +94,8 @@ http://127.0.0.1:5000/
 - saved plan archive
 - dedicated run detail pages
 - ethics-driven schedule suggestions inside archived run reviews
+- Outcome Builder modes for conflict-free, coverage-first, ethics-first, fairness-first, and balanced revisions
+- save outcome-driven revisions or accept a generated schedule as the final result
 - inline help markers across controls and metrics
 - uploadable planner template for bulk input
 - feedback lounge for product notes and contribution interest
@@ -123,7 +126,7 @@ The platform is organized as separate service areas so each workflow has its own
 | `Report Studio` | Compares export renderers for printable reporting | Side-by-side PDF previews + downloads |
 | `Ethics Review Board` | Reviews plans through ethical theory lenses | Ethics scores + theory-by-theory analysis |
 | `Coverage Archive` | Lists previous saved plans | Plan history |
-| `Plan Details` | Opens one archived plan | Staffing detail, exports, ethics record + grounded schedule suggestions |
+| `Plan Details` | Opens one archived plan | Staffing detail, exports, ethics record, grounded schedule suggestions, and Outcome Builder revisions |
 | `Feedback Lounge` | Captures product feedback and contribution interest | Stored feedback notes |
 | `Manager Help Center` | Explains services, metrics, and workflow | In-app documentation |
 
@@ -137,8 +140,10 @@ The platform is organized as separate service areas so each workflow has its own
 4. Open the saved record in `Coverage Archive`.
 5. Review the same plan in `Operations Dashboard` and `Ethics Review Board` for reporting.
 6. If the ethics record shows `Needs review`, use the schedule suggestions block in the run detail page to see which adjustments should be made first.
-7. Open `Report Studio` when you want a printable analytics or ethics briefing and choose between the ReportLab and WeasyPrint PDF versions.
-8. Download the plan as JSON or CSV when you need structured downstream data.
+7. Open `Outcome Builder` in the same run detail page, choose the goal you care about most, and generate revised schedule options.
+8. Save the best candidate as a revision or accept it as the final schedule.
+9. Open `Report Studio` when you want a printable analytics or ethics briefing and choose between the ReportLab and WeasyPrint PDF versions.
+10. Download the plan as JSON or CSV when you need structured downstream data.
 
 ---
 
@@ -164,6 +169,7 @@ Each archived plan stores:
 - theory-by-theory interpretation notes
 - an ethics narrative explaining what the system is checking
 - schedule suggestions when conflicts, overload, weak coverage, or other risk signals need attention
+- Outcome Builder lineage when a run is revised or promoted to a final outcome
 
 This makes the app stronger for:
 
@@ -211,6 +217,8 @@ Available endpoints:
 
 - `GET /history/<run_id>/download/json`
 - `GET /history/<run_id>/download/csv`
+- `POST /history/<run_id>/outcomes`
+- `POST /history/<run_id>/outcomes/<candidate_key>/save`
 - `GET /analytics/report.pdf`
 - `GET /ethics/report.pdf`
 - `GET /reports/pdf/<report_type>/<renderer>`
@@ -229,6 +237,7 @@ Bulk-input template endpoints:
 |-- scheduler_config.py
 |-- scheduler_engine.py
 |-- scheduler_reporting.py
+|-- outcome_builder.py
 |-- pdf_reports.py
 |-- app.py
 |-- README.md
@@ -259,10 +268,11 @@ Bulk-input template endpoints:
 - `scheduler_config.py` app metadata, FAQ items, seeded scenarios, and algorithm definitions
 - `scheduler_engine.py` parsing, scheduling algorithms, conflicts, warnings, and import/export helpers
 - `scheduler_reporting.py` ethics scoring, analytics rollups, and schedule suggestion generation
+- `outcome_builder.py` Outcome Builder goal definitions, candidate generation, and weighted revision scoring
 - `pdf_reports.py` dual-renderer PDF report builders for ReportLab and WeasyPrint
 - `templates/` multi-page HTML templates for each service area
-- `static/css/style.css` design system, themes, responsiveness, and motion
-- `static/js/app.js` theme behavior, homepage activity carousel, scheduler interactions, and template import flow
+- `static/css/style.css` design system, themes, responsiveness, motion, and Outcome Builder presentation
+- `static/js/app.js` theme behavior, homepage activity carousel, scheduler interactions, template import flow, and Outcome Builder compare/save workflow
 
 ---
 
@@ -318,6 +328,7 @@ You can skip activation entirely and run the virtual environment interpreter dir
 - Includes seeded history so the app is not empty on first launch
 - Keeps ethics evaluation tied directly to archived operational decisions
 - Keeps schedule suggestions tied directly to the stored run data so recommendations are specific instead of generic
+- Keeps derived revisions linked to their source runs so final outcomes remain traceable in the archive
 
 ---
 

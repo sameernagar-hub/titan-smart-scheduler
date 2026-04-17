@@ -41,7 +41,15 @@
       <tbody>
         {% for run in history_runs %}
           <tr>
-            <td>{{ run.name }}</td>
+            <td>
+              {{ run.name }}
+              {% if run.outcome_goal_label or run.is_final %}
+                <div class="table-subline">
+                  {% if run.outcome_goal_label %}<span>{{ run.outcome_goal_label }}</span>{% endif %}
+                  {% if run.is_final %}<span>Final Outcome</span>{% endif %}
+                </div>
+              {% endif %}
+            </td>
             <td>{{ run.created_at_display }}</td>
             <td>{{ run.mode_label }}</td>
             <td>{{ run.algorithm_label }}</td>

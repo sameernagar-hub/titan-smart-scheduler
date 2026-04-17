@@ -12,7 +12,19 @@
     <span class="badge soft">{{ detail.stats.coverage_ready_percent }}% coverage ready</span>
     <span class="badge soft">{{ detail.stats.conflict_free_percent }}% conflict free</span>
     <span class="badge soft">Ethics {{ detail.ethics.overall_score }}</span>
+    {% if detail.run.outcome_goal %}
+      <span class="badge soft">{{ outcome_goals[detail.run.outcome_goal].label }}</span>
+    {% endif %}
+    {% if detail.run.is_final %}
+      <span class="badge soft">Final Outcome</span>
+    {% endif %}
   </div>
+  {% if source_run %}
+  <div class="history-banner lineage-banner">
+    Built from <a href="{{ url_for('history_detail_page', run_id=source_run.id) }}">{{ source_run.name }}</a>
+    {% if detail.run.outcome_label %}<span>{{ detail.run.outcome_label }}</span>{% endif %}
+  </div>
+  {% endif %}
   <div class="cta-row">
     <a class="ghost-btn" href="{{ url_for('download_run_json', run_id=detail.run.id) }}">Download JSON</a>
     <a class="ghost-btn" href="{{ url_for('download_run_csv', run_id=detail.run.id) }}">Download CSV</a>
@@ -126,6 +138,35 @@
 </section>
 {% endif %}
 
+<section class="glass table-card outcome-builder-shell" id="outcomeBuilderRoot" data-run-id="{{ detail.run.id }}">
+  <div class="section-head outcome-heading">
+    <div>
+      <span class="eyebrow">Outcome Builder</span>
+      <h2>Generate a stronger final schedule</h2>
+      <p>Choose the planning priority, spin up revised outcomes, then save the version that best fits the moment.</p>
+    </div>
+    <div class="outcome-baseline">
+      <span class="metric-chip">Conflicts {{ detail.conflicts|length }}</span>
+      <span class="metric-chip">Coverage {{ detail.stats.coverage_ready_percent }}%</span>
+      <span class="metric-chip">Fairness {{ detail.stats.fairness_spread }}</span>
+      <span class="metric-chip">Ethics {{ detail.ethics.overall_score }}</span>
+    </div>
+  </div>
+  <div class="outcome-goals" id="outcomeGoalPicker">
+    {% for key, item in outcome_goals.items() %}
+      <button class="outcome-goal-chip{% if loop.first %} active{% endif %}" type="button" data-goal="{{ key }}">
+        <strong>{{ item.label }}</strong>
+        <span>{{ item.tagline }}</span>
+      </button>
+    {% endfor %}
+  </div>
+  <div class="cta-row outcome-actions">
+    <button class="primary-btn" type="button" id="generateOutcomesBtn">Generate Outcomes</button>
+    <div class="outcome-status hidden" id="outcomeStatus" role="status" aria-live="polite"></div>
+  </div>
+  <div class="outcome-results hidden" id="outcomeResults"></div>
+</section>
+
 <section class="glass table-card">
   <div class="section-head">
     <h2>Assignments</h2>
@@ -158,4 +199,9 @@
     </table>
   </div>
 </section>
+{% endblock %}
+{% block page_data %}
+<script>
+  window.OUTCOME_BUILDER = {{ outcome_goals|tojson }};
+</script>
 {% endblock %}

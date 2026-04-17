@@ -9,6 +9,7 @@ from typing import Any, Dict, List, Optional
 
 from flask import Flask, abort, g, jsonify, make_response, redirect, render_template, request, url_for
 
+from outcome_builder import OUTCOME_GOALS, build_outcome_candidates
 from pdf_reports import (
     RENDERER_OPTIONS,
     REPORT_OPTIONS,
@@ -112,7 +113,8 @@ def fetch_schedule_run_rows() -> List[sqlite3.Row]:
     return get_db().execute(
         """
         SELECT id, name, created_at, mode, algorithm, assignment_count, backup_count, warning_count,
-               conflict_count, fairness_spread, coverage_ready_percent, scheduled_days, ethics_json
+               conflict_count, fairness_spread, coverage_ready_percent, scheduled_days, ethics_json,
+               source_run_id, outcome_goal, outcome_label, is_final
         FROM schedule_runs
         ORDER BY created_at DESC, id DESC
         """
@@ -191,6 +193,7 @@ def get_run_detail(run_id: int) -> Optional[Dict[str, Any]]:
 
     run_dict = dict(run)
     students = json.loads(run["students_json"])
+    payload = json.loads(run["payload_json"])
     warnings = json.loads(run["warnings_json"])
     conflicts = json.loads(run["conflicts_json"])
     stats = json.loads(run["stats_json"])
@@ -227,6 +230,7 @@ def get_run_detail(run_id: int) -> Optional[Dict[str, Any]]:
     ethics = json.loads(run["ethics_json"] or "{}")
     return {
         "run": run_dict,
+        "payload": payload,
         "students": students,
         "assignments": assignments,
         "warnings": warnings,
@@ -250,6 +254,10 @@ def save_schedule_run(
     callout_plan: List[Dict[str, Any]],
     ethics: Dict[str, Any],
     created_at: Optional[str] = None,
+    source_run_id: Optional[int] = None,
+    outcome_goal: Optional[str] = None,
+    outcome_label: Optional[str] = None,
+    is_final: bool = False,
 ) -> int:
     db = get_db()
     cursor = db.execute(
@@ -258,8 +266,9 @@ def save_schedule_run(
             name, created_at, mode, algorithm, weeks, students_json, payload_json,
             stats_json, warnings_json, conflicts_json, callout_plan_json, ethics_json,
             assignment_count, backup_count, warning_count, conflict_count,
-            fairness_spread, coverage_ready_percent, scheduled_days
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            fairness_spread, coverage_ready_percent, scheduled_days,
+            source_run_id, outcome_goal, outcome_label, is_final
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             name,
@@ -281,6 +290,10 @@ def save_schedule_run(
             stats["fairness_spread"],
             stats["coverage_ready_percent"],
             stats["scheduled_days"],
+            source_run_id,
+            outcome_goal,
+            outcome_label,
+            int(is_final),
         ),
     )
     run_id = cursor.lastrowid
@@ -438,6 +451,11 @@ def init_db() -> None:
                 fairness_spread REAL NOT NULL,
                 coverage_ready_percent REAL NOT NULL,
                 scheduled_days INTEGER NOT NULL
+                ,
+                source_run_id INTEGER,
+                outcome_goal TEXT,
+                outcome_label TEXT,
+                is_final INTEGER NOT NULL DEFAULT 0
             )
             """
         )
@@ -478,6 +496,18 @@ def init_db() -> None:
         columns = {row[1] for row in db.execute("PRAGMA table_info(schedule_runs)").fetchall()}
         if "ethics_json" not in columns:
             db.execute("ALTER TABLE schedule_runs ADD COLUMN ethics_json TEXT NOT NULL DEFAULT '{}'")
+            db.commit()
+        if "source_run_id" not in columns:
+            db.execute("ALTER TABLE schedule_runs ADD COLUMN source_run_id INTEGER")
+            db.commit()
+        if "outcome_goal" not in columns:
+            db.execute("ALTER TABLE schedule_runs ADD COLUMN outcome_goal TEXT")
+            db.commit()
+        if "outcome_label" not in columns:
+            db.execute("ALTER TABLE schedule_runs ADD COLUMN outcome_label TEXT")
+            db.commit()
+        if "is_final" not in columns:
+            db.execute("ALTER TABLE schedule_runs ADD COLUMN is_final INTEGER NOT NULL DEFAULT 0")
             db.commit()
 
     with app.app_context():
@@ -616,6 +646,7 @@ def history_page() -> str:
         item["mode_label"] = mode_label(item["mode"])
         item["algorithm_label"] = algorithm_label(canonical_algorithm(item["algorithm"]))
         item["created_at_display"] = format_timestamp(item["created_at"])
+        item["outcome_goal_label"] = OUTCOME_GOALS.get(item.get("outcome_goal") or "", {}).get("label", "")
         history_runs.append(item)
     return render_template(
         "history.html",
@@ -630,7 +661,16 @@ def history_detail_page(run_id: int) -> str:
     detail = get_run_detail(run_id)
     if detail is None:
         abort(404)
-    return render_template("history_detail.html", page_name="history", detail=detail)
+    source_run = None
+    if detail["run"].get("source_run_id"):
+        source_run = get_db().execute("SELECT id, name FROM schedule_runs WHERE id = ?", (detail["run"]["source_run_id"],)).fetchone()
+    return render_template(
+        "history_detail.html",
+        page_name="history",
+        detail=detail,
+        outcome_goals=OUTCOME_GOALS,
+        source_run=dict(source_run) if source_run else None,
+    )
 
 
 @app.route("/history/<int:run_id>/download/json")
@@ -686,6 +726,107 @@ def download_run_csv(run_id: int):
     response.headers["Content-Type"] = "text/csv"
     response.headers["Content-Disposition"] = f"attachment; filename=run-{run_id}.csv"
     return response
+
+
+@app.route("/history/<int:run_id>/outcomes", methods=["POST"])
+def history_outcomes(run_id: int):
+    detail = get_run_detail(run_id)
+    if detail is None:
+        abort(404)
+    payload = request.get_json(force=True)
+    goal = str(payload.get("goal") or "").strip().lower()
+    try:
+        candidates = build_outcome_candidates(detail, goal)
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+    preview_candidates = [
+        {
+            "key": item["key"],
+            "title": item["title"],
+            "subtitle": item["subtitle"],
+            "goal": item["goal"],
+            "goal_label": item["goal_label"],
+            "algorithm": item["algorithm"],
+            "algorithm_label": item["algorithm_label"],
+            "mode_label": item["mode_label"],
+            "score": item["score"],
+            "summary": item["summary"],
+            "deltas": item["deltas"],
+            "narrative": item["narrative"],
+            "rank": item["rank"],
+            "recommended": item["recommended"],
+        }
+        for item in candidates
+    ]
+    return jsonify(
+        {
+            "goal": goal,
+            "goal_label": OUTCOME_GOALS[goal]["label"],
+            "baseline": {
+                "conflicts": len(detail["conflicts"]),
+                "warnings": len(detail["warnings"]),
+                "coverage_ready_percent": detail["stats"].get("coverage_ready_percent", 0),
+                "fairness_spread": detail["stats"].get("fairness_spread", 0),
+                "ethics_score": detail["ethics"].get("overall_score", 0),
+            },
+            "candidates": preview_candidates,
+        }
+    )
+
+
+@app.route("/history/<int:run_id>/outcomes/<candidate_key>/save", methods=["POST"])
+def save_history_outcome(run_id: int, candidate_key: str):
+    detail = get_run_detail(run_id)
+    if detail is None:
+        abort(404)
+    payload = request.get_json(force=True)
+    goal = str(payload.get("goal") or "").strip().lower()
+    finalize = bool(payload.get("finalize"))
+    try:
+        candidates = build_outcome_candidates(detail, goal)
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+    candidate = next((item for item in candidates if item["key"] == candidate_key), None)
+    if candidate is None:
+        return jsonify({"error": "That outcome candidate is no longer available. Generate outcomes again."}), 404
+
+    schedule_name = (
+        f"{detail['run']['name']} - Final Outcome"
+        if finalize
+        else f"{detail['run']['name']} - {candidate['goal_label']} Revision"
+    )
+    run_id_new = save_schedule_run(
+        schedule_name,
+        candidate["payload"],
+        candidate["students"],
+        [
+            ShiftAssignment(
+                shift_instance_id=item["shift_instance_id"],
+                date=item["date"],
+                student=item["student"],
+                time=item["time"],
+                shift_name=item["shift_name"],
+                start_minutes=item["start_minutes"],
+                end_minutes=item["end_minutes"],
+                round_label=item.get("round_label"),
+                conflict=bool(item.get("conflict")),
+                conflict_reason=item.get("conflict_reason"),
+                role=item.get("role", "primary"),
+                ethics_flags=item.get("ethics_flags") or [],
+            )
+            for item in candidate["assignments"]
+        ],
+        candidate["conflicts"],
+        candidate["warnings"],
+        candidate["stats"],
+        candidate["callout_plan"],
+        candidate["ethics"],
+        source_run_id=run_id,
+        outcome_goal=goal,
+        outcome_label=candidate["title"],
+        is_final=finalize,
+    )
+    return jsonify({"run_id": run_id_new, "history_url": f"/history/{run_id_new}"})
 
 
 @app.route("/faq")

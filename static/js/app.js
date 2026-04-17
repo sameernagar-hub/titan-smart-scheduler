@@ -635,9 +635,162 @@ function initializeSchedulerPage() {
   switchResultView("list");
 }
 
+function initializeHistoryDetailPage() {
+  const root = document.getElementById("outcomeBuilderRoot");
+  if (!root) return;
+
+  const runId = root.dataset.runId;
+  const outcomesMeta = window.OUTCOME_BUILDER || {};
+  const els = {
+    goalPicker: document.getElementById("outcomeGoalPicker"),
+    generateBtn: document.getElementById("generateOutcomesBtn"),
+    status: document.getElementById("outcomeStatus"),
+    results: document.getElementById("outcomeResults"),
+  };
+  const state = {
+    goal: Object.keys(outcomesMeta)[0] || "balanced",
+    loading: false,
+  };
+
+  function formatSigned(value, suffix = "") {
+    if (value > 0) return `+${value}${suffix}`;
+    return `${value}${suffix}`;
+  }
+
+  function setStatus(message, pending = false) {
+    if (!message) {
+      els.status.classList.add("hidden");
+      els.status.textContent = "";
+      els.status.classList.remove("pending");
+      return;
+    }
+    els.status.classList.remove("hidden");
+    els.status.textContent = message;
+    els.status.classList.toggle("pending", pending);
+  }
+
+  function syncGoalSelection() {
+    els.goalPicker.querySelectorAll("[data-goal]").forEach((button) => {
+      button.classList.toggle("active", button.dataset.goal === state.goal);
+    });
+  }
+
+  function renderCandidates(payload) {
+    const candidates = payload.candidates || [];
+    if (!candidates.length) {
+      els.results.classList.remove("hidden");
+      els.results.innerHTML = `<div class="card inset">No alternate outcomes were available for this run.</div>`;
+      return;
+    }
+    els.results.classList.remove("hidden");
+    els.results.innerHTML = `
+      <div class="outcome-summary-bar">
+        <span class="metric-chip">Current conflicts ${payload.baseline.conflicts}</span>
+        <span class="metric-chip">Current coverage ${payload.baseline.coverage_ready_percent}%</span>
+        <span class="metric-chip">Current fairness ${payload.baseline.fairness_spread}</span>
+        <span class="metric-chip">Current ethics ${payload.baseline.ethics_score}</span>
+      </div>
+      <div class="outcome-card-grid">
+        ${candidates.map((candidate) => `
+          <article class="outcome-card${candidate.recommended ? " recommended" : ""}">
+            <div class="outcome-card-topline">
+              <span class="badge soft">${escapeHtml(candidate.goal_label)}</span>
+              <span class="badge soft">${candidate.recommended ? "Recommended" : `Option ${candidate.rank}`}</span>
+            </div>
+            <div class="outcome-card-head">
+              <div>
+                <h3>${escapeHtml(candidate.title)}</h3>
+                <p>${escapeHtml(candidate.subtitle)}</p>
+              </div>
+              <strong class="outcome-score">${candidate.score}</strong>
+            </div>
+            <p class="outcome-narrative">${escapeHtml(candidate.narrative)}</p>
+            <div class="outcome-metrics">
+              <span class="metric-chip">Conflicts ${candidate.summary.conflicts}</span>
+              <span class="metric-chip">Coverage ${candidate.summary.coverage_ready_percent}%</span>
+              <span class="metric-chip">Fairness ${candidate.summary.fairness_spread}</span>
+              <span class="metric-chip">Ethics ${candidate.summary.ethics_score}</span>
+              <span class="metric-chip">Warnings ${candidate.summary.warnings}</span>
+              <span class="metric-chip">Preference ${candidate.summary.preference_match_rate}%</span>
+            </div>
+            <div class="outcome-deltas">
+              <span class="delta-pill ${candidate.deltas.conflicts < 0 ? "better" : candidate.deltas.conflicts > 0 ? "worse" : ""}">Conflicts ${formatSigned(candidate.deltas.conflicts)}</span>
+              <span class="delta-pill ${candidate.deltas.coverage_ready_percent > 0 ? "better" : candidate.deltas.coverage_ready_percent < 0 ? "worse" : ""}">Coverage ${formatSigned(candidate.deltas.coverage_ready_percent, " pts")}</span>
+              <span class="delta-pill ${candidate.deltas.ethics_score > 0 ? "better" : candidate.deltas.ethics_score < 0 ? "worse" : ""}">Ethics ${formatSigned(candidate.deltas.ethics_score)}</span>
+              <span class="delta-pill ${candidate.deltas.fairness_spread < 0 ? "better" : candidate.deltas.fairness_spread > 0 ? "worse" : ""}">Fairness ${formatSigned(candidate.deltas.fairness_spread)}</span>
+            </div>
+            <div class="cta-row outcome-card-actions">
+              <button class="ghost-btn" type="button" data-action="save-revision" data-candidate="${candidate.key}">Save Revision</button>
+              <button class="primary-btn" type="button" data-action="accept-final" data-candidate="${candidate.key}">Accept Final</button>
+            </div>
+          </article>
+        `).join("")}
+      </div>
+    `;
+  }
+
+  async function saveCandidate(candidateKey, finalize) {
+    setStatus(finalize ? "Saving final outcome..." : "Saving revision...", true);
+    try {
+      const response = await fetch(`/history/${runId}/outcomes/${candidateKey}/save`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ goal: state.goal, finalize }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Unable to save this outcome.");
+      window.location.href = data.history_url;
+    } catch (error) {
+      setStatus(error.message, false);
+    }
+  }
+
+  async function generateOutcomes() {
+    if (state.loading) return;
+    state.loading = true;
+    els.generateBtn.disabled = true;
+    els.generateBtn.textContent = "Generating...";
+    setStatus("Reading the run, testing outcome variants, and scoring the best revisions...", true);
+    try {
+      const response = await fetch(`/history/${runId}/outcomes`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ goal: state.goal }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Unable to generate outcomes.");
+      renderCandidates(data);
+      setStatus(`${data.goal_label} outcomes are ready. Compare the revisions and save the one you want.`, false);
+      root.scrollIntoView({ behavior: "smooth", block: "start" });
+    } catch (error) {
+      setStatus(error.message, false);
+    } finally {
+      state.loading = false;
+      els.generateBtn.disabled = false;
+      els.generateBtn.textContent = "Generate Outcomes";
+    }
+  }
+
+  els.goalPicker.querySelectorAll("[data-goal]").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.goal = button.dataset.goal;
+      syncGoalSelection();
+    });
+  });
+  els.generateBtn.addEventListener("click", generateOutcomes);
+  els.results.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-action]");
+    if (!button) return;
+    saveCandidate(button.dataset.candidate, button.dataset.action === "accept-final");
+  });
+
+  syncGoalSelection();
+}
+
 applyStoredTheme();
 initializePageMotion();
 initializeThemePicker();
 initializeDetailsDismiss();
 if (pageName === "home") initializeHomeCarousel();
 if (pageName === "scheduler") initializeSchedulerPage();
+if (pageName === "history") initializeHistoryDetailPage();
