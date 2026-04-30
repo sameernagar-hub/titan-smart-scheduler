@@ -35,11 +35,13 @@ from scheduler_engine import (
     ShiftAssignment,
     algorithm_label,
     build_input_template,
+    build_text_input_template,
     clamp_int,
     detect_conflicts,
     generate_schedule,
     mode_label,
     normalize_import_payload,
+    parse_text_input_template,
     parse_students,
     serialize_assignments,
     serialize_students,
@@ -904,16 +906,19 @@ def api_generate():
 
 @app.route("/api/input-template")
 def api_input_template():
-    response = make_response(json.dumps(build_input_template(), indent=2))
-    response.headers["Content-Type"] = "application/json"
-    response.headers["Content-Disposition"] = "attachment; filename=planner-template.json"
+    response = make_response(build_text_input_template())
+    response.headers["Content-Type"] = "text/plain; charset=utf-8"
+    response.headers["Content-Disposition"] = "attachment; filename=planner-template.txt"
     return response
 
 
 @app.route("/api/import-template", methods=["POST"])
 def api_import_template():
-    payload = request.get_json(force=True)
     try:
+        if request.is_json:
+            payload = request.get_json(force=True)
+        else:
+            payload = parse_text_input_template(request.get_data(as_text=True))
         normalized = normalize_import_payload(payload)
     except ValueError as exc:
         return jsonify({"error": str(exc)}), 400

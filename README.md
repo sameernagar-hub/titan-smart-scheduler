@@ -223,10 +223,10 @@ Available endpoints:
 - `GET /ethics/report.pdf`
 - `GET /reports/pdf/<report_type>/<renderer>`
 
-Bulk-input template endpoints:
+Bulk-input worksheet endpoints:
 
-- `GET /api/input-template`
-- `POST /api/import-template`
+- `GET /api/input-template` downloads a plain text planning worksheet
+- `POST /api/import-template` imports a filled worksheet and still accepts legacy JSON payloads
 
 ---
 

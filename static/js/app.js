@@ -12,16 +12,27 @@ function applyStoredTheme() {
   const theme = localStorage.getItem("titan-theme") || "nightfall";
   root.dataset.theme = theme;
   if (picker) {
-    picker.querySelectorAll("[data-theme]").forEach((chip) => {
-      chip.classList.toggle("active", chip.dataset.theme === theme);
-      chip.setAttribute("aria-pressed", chip.dataset.theme === theme ? "true" : "false");
-    });
+    if (picker.matches("select")) {
+      picker.value = theme;
+    } else {
+      picker.querySelectorAll("[data-theme]").forEach((chip) => {
+        chip.classList.toggle("active", chip.dataset.theme === theme);
+        chip.setAttribute("aria-pressed", chip.dataset.theme === theme ? "true" : "false");
+      });
+    }
   }
 }
 
 function initializeThemePicker() {
   const picker = document.getElementById("themePicker");
   if (!picker) return;
+  if (picker.matches("select")) {
+    picker.addEventListener("change", () => {
+      document.documentElement.dataset.theme = picker.value;
+      localStorage.setItem("titan-theme", picker.value);
+    });
+    return;
+  }
   picker.querySelectorAll("[data-theme]").forEach((chip) => {
     chip.addEventListener("click", () => {
       const theme = chip.dataset.theme;
@@ -167,8 +178,16 @@ function initializeSchedulerPage() {
 
   function syncAlgorithmShowcase() {
     document.querySelectorAll(".algorithm-card[data-algorithm]").forEach((card) => {
-      card.classList.toggle("active", card.dataset.algorithm === els.algorithm.value);
+      const isActive = card.dataset.algorithm === els.algorithm.value;
+      card.classList.toggle("active", isActive);
+      card.setAttribute("aria-pressed", isActive ? "true" : "false");
     });
+  }
+
+  function selectAlgorithm(algorithm) {
+    if (!Array.from(els.algorithm.options).some((option) => option.value === algorithm)) return;
+    els.algorithm.value = algorithm;
+    els.algorithm.dispatchEvent(new Event("change", { bubbles: true }));
   }
 
   function flash(message, type = "success") {
@@ -294,17 +313,20 @@ function initializeSchedulerPage() {
 
   async function importTemplateFile(file) {
     const text = await file.text();
-    let parsed;
-    try {
-      parsed = JSON.parse(text);
-    } catch {
-      throw new Error("Uploaded template must be valid JSON.");
+    const isJson = file.name.toLowerCase().endsWith(".json") || file.type.includes("json");
+    let body = text;
+    if (isJson) {
+      try {
+        body = JSON.stringify(JSON.parse(text));
+      } catch {
+        throw new Error("Uploaded JSON template is not valid. Try the plain text template instead.");
+      }
     }
 
     const response = await fetch("/api/import-template", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(parsed),
+      headers: { "Content-Type": isJson ? "application/json" : "text/plain" },
+      body,
     });
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || "Unable to import template.");
@@ -602,6 +624,9 @@ function initializeSchedulerPage() {
   });
   document.querySelectorAll("#resultSwitch .segment").forEach((button) => {
     button.addEventListener("click", () => switchResultView(button.dataset.view));
+  });
+  document.querySelectorAll(".algorithm-card[data-algorithm]").forEach((card) => {
+    card.addEventListener("click", () => selectAlgorithm(card.dataset.algorithm));
   });
   document.getElementById("prevWeekBtn").addEventListener("click", () => {
     state.currentWeekOffset -= 1;

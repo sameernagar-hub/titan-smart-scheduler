@@ -40,13 +40,13 @@
         <a href="{{ url_for('feedback_page') }}" class="{% if page_name == 'feedback' %}active{% endif %}">Feedback</a>
         <a href="{{ url_for('faq_page') }}" class="{% if page_name == 'faq' %}active{% endif %}">FAQ</a>
       </nav>
-      <div class="theme-picker" role="group" aria-label="Theme selection">
-        <span>Theme</span>
-        <div class="theme-switcher" id="themePicker">
-          <button class="theme-chip active" type="button" data-theme="nightfall">Nightfall</button>
-          <button class="theme-chip" type="button" data-theme="champagne">Champagne</button>
-          <button class="theme-chip" type="button" data-theme="lagoon">Lagoon</button>
-        </div>
+      <div class="theme-picker">
+        <label for="themePicker">Theme</label>
+        <select class="theme-select" id="themePicker" aria-label="Theme selection">
+          <option value="nightfall">Nightfall</option>
+          <option value="champagne">Champagne</option>
+          <option value="lagoon">Lagoon</option>
+        </select>
       </div>
     </div>
   </header>

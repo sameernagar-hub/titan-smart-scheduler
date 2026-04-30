@@ -949,9 +949,219 @@ def build_input_template() -> Dict[str, Any]:
     }
 
 
+def build_text_input_template() -> str:
+    template = build_input_template()
+    lines = [
+        "# Titan Scheduler Planning Template",
+        "# Edit the values after each colon, save the file, then upload it back into the Shift Planning Desk.",
+        "# Mode choices: Smart Custom or Round Robin.",
+        "# Algorithm choices: Constraint Shield, Priority Scheduling, Circle Method, or Round Robin.",
+        "# Preferred shift choices: morning, afternoon, evening, or any.",
+        "",
+        "[Plan]",
+        f"Plan name: {template['schedule_name']}",
+        f"Mode: {mode_label(template['mode'])}",
+        f"Algorithm: {algorithm_label(template['algorithm'])}",
+        f"Weeks: {template['weeks']}",
+        "",
+        "[Students]",
+    ]
+    for index, student in enumerate(template["students"], start=1):
+        lines.extend(
+            [
+                f"Student {index}",
+                f"Name: {student['name']}",
+                f"Class/unavailable times: {student['profile']}",
+                f"Reliability: {student['reliability']}",
+                f"Max hours per week: {student['max_hours']}",
+                f"Preferred shift: {student['preferred_shift']}",
+                f"Recent callouts: {student['recent_callouts']}",
+                "",
+            ]
+        )
+
+    lines.append("[Shift Templates]")
+    for index, shift in enumerate(template["shift_templates"], start=1):
+        config = template["schedule_config"].get(f"shift_{shift['id']}", {})
+        lines.extend(
+            [
+                f"Shift {index}",
+                f"Name: {shift['name']}",
+                f"Start: {shift['start']}",
+                f"End: {shift['end']}",
+                f"Students needed: {shift['students_needed']}",
+                f"Days: {config.get('days', 'Mon Wed Fri')}",
+                f"Times per week: {config.get('count', 1)}",
+                "",
+            ]
+        )
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def _template_key(label: str) -> str:
+    without_hint = re.sub(r"\([^)]*\)", "", label)
+    return re.sub(r"[^a-z0-9]+", "_", without_hint.strip().lower()).strip("_")
+
+
+def _canonical_import_mode(value: Any) -> str:
+    raw = _template_key(str(value or "round_robin"))
+    return {
+        "custom": "custom",
+        "smart_custom": "custom",
+        "round_robin": "round_robin",
+        "signature_rotation": "round_robin",
+        "rotation": "round_robin",
+    }.get(raw, raw)
+
+
+def _canonical_import_algorithm(value: Any) -> str:
+    raw = _template_key(str(value or "constraint_shield"))
+    aliases = {
+        "constraint_shield": "constraint_shield",
+        "constraint_aware": "constraint_shield",
+        "priority": "priority",
+        "priority_scheduling": "priority",
+        "circle": "circle",
+        "circle_method": "circle",
+        "round_robin": "round_robin",
+        "standard": "round_robin",
+    }
+    for key, item in ALGORITHM_META.items():
+        aliases[_template_key(item["label"])] = "round_robin" if key == "standard" else key
+    return aliases.get(raw, raw)
+
+
+def parse_text_input_template(text: str) -> Dict[str, Any]:
+    if not text.strip():
+        raise ValueError("Uploaded text template is empty.")
+
+    payload: Dict[str, Any] = {}
+    students: List[Dict[str, Any]] = []
+    shifts: List[Dict[str, Any]] = []
+    section = ""
+    current_student: Optional[Dict[str, Any]] = None
+    current_shift: Optional[Dict[str, Any]] = None
+
+    plan_fields = {
+        "plan_name": "schedule_name",
+        "schedule_name": "schedule_name",
+        "mode": "mode",
+        "algorithm": "algorithm",
+        "weeks": "weeks",
+    }
+    student_fields = {
+        "name": "name",
+        "class_unavailable_times": "profile",
+        "class_unavailable_time": "profile",
+        "profile": "profile",
+        "reliability": "reliability",
+        "max_hours": "max_hours",
+        "max_hours_per_week": "max_hours",
+        "preferred_shift": "preferred_shift",
+        "recent_callouts": "recent_callouts",
+    }
+    shift_fields = {
+        "name": "name",
+        "start": "start",
+        "end": "end",
+        "students_needed": "students_needed",
+        "days": "_days",
+        "times_per_week": "_count",
+        "count": "_count",
+    }
+
+    for raw_line in text.splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#"):
+            continue
+
+        section_match = re.fullmatch(r"\[(.+)]", line)
+        if section_match:
+            section_label = _template_key(section_match.group(1))
+            if "student" in section_label:
+                section = "students"
+            elif "shift" in section_label:
+                section = "shifts"
+            else:
+                section = "plan"
+            current_student = None
+            current_shift = None
+            continue
+
+        student_match = re.fullmatch(r"student\s+(\d+)", line, flags=re.IGNORECASE)
+        if student_match:
+            section = "students"
+            current_student = {}
+            students.append(current_student)
+            current_shift = None
+            continue
+
+        shift_match = re.fullmatch(r"shift\s+(\d+)", line, flags=re.IGNORECASE)
+        if shift_match:
+            section = "shifts"
+            current_shift = {"id": int(shift_match.group(1))}
+            shifts.append(current_shift)
+            current_student = None
+            continue
+
+        if ":" not in line:
+            continue
+
+        label, value = line.split(":", 1)
+        key = _template_key(label)
+        value = value.strip()
+
+        if section == "students":
+            if current_student is None:
+                current_student = {}
+                students.append(current_student)
+            field = student_fields.get(key)
+            if field:
+                current_student[field] = value
+            continue
+
+        if section == "shifts":
+            if current_shift is None:
+                current_shift = {"id": len(shifts) + 1}
+                shifts.append(current_shift)
+            field = shift_fields.get(key)
+            if field:
+                current_shift[field] = value
+            continue
+
+        field = plan_fields.get(key)
+        if field:
+            payload[field] = value
+
+    if students:
+        payload["students"] = students
+    if shifts:
+        shift_templates = []
+        schedule_config: Dict[str, Dict[str, Any]] = {}
+        for index, shift in enumerate(shifts, start=1):
+            shift_id = clamp_int(shift.get("id"), index, 1, 9999)
+            shift_templates.append(
+                {
+                    "id": shift_id,
+                    "name": shift.get("name") or f"Shift {index}",
+                    "start": shift.get("start") or "09:00",
+                    "end": shift.get("end") or "13:00",
+                    "students_needed": shift.get("students_needed") or 1,
+                }
+            )
+            schedule_config[f"shift_{shift_id}"] = {
+                "days": shift.get("_days") or "Mon Wed Fri",
+                "count": shift.get("_count") or 1,
+            }
+        payload["shift_templates"] = shift_templates
+        payload["schedule_config"] = schedule_config
+
+    return payload
+
+
 def normalize_import_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
     if not isinstance(payload, dict):
-        raise ValueError("Imported file must contain a JSON object.")
+        raise ValueError("Imported file must contain a planning template.")
 
     students = payload.get("students")
     if not isinstance(students, list) or len(students) < 2:
@@ -972,11 +1182,11 @@ def normalize_import_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
             }
         )
 
-    mode = str(payload.get("mode") or "round_robin").strip().lower()
+    mode = _canonical_import_mode(payload.get("mode") or "round_robin")
     if mode not in {"round_robin", "custom"}:
         raise ValueError("Mode must be either round_robin or custom.")
 
-    algorithm = str(payload.get("algorithm") or "constraint_shield").strip().lower()
+    algorithm = _canonical_import_algorithm(payload.get("algorithm") or "constraint_shield")
     if algorithm not in ALGORITHM_META:
         raise ValueError("Algorithm must be one of: round_robin, circle, priority, constraint_shield.")
 

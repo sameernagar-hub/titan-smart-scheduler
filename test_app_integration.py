@@ -4,7 +4,7 @@ from html import unescape
 
 import app
 from scheduler_config import FAQ_ITEMS
-from scheduler_engine import build_input_template
+from scheduler_engine import build_input_template, build_text_input_template
 
 
 class AppIntegrationTests(unittest.TestCase):
@@ -72,15 +72,15 @@ class AppIntegrationTests(unittest.TestCase):
     def test_input_template_endpoint_matches_builder(self):
         response = self.client.get("/api/input-template")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.headers["Content-Type"], "application/json")
-        payload = response.get_json()
-        self.assertEqual(payload, build_input_template())
+        self.assertEqual(response.headers["Content-Type"], "text/plain; charset=utf-8")
+        self.assertIn("planner-template.txt", response.headers["Content-Disposition"])
+        self.assertEqual(response.get_data(as_text=True), build_text_input_template())
 
     def test_import_template_round_trip(self):
-        template = build_input_template()
-        template["schedule_name"] = "Imported Plan"
-        template["weeks"] = 3
-        response = self.client.post("/api/import-template", json=template)
+        template = build_text_input_template()
+        template = template.replace("Plan name: Bookstore floor coverage week 4", "Plan name: Imported Plan")
+        template = template.replace("Weeks: 4", "Weeks: 3")
+        response = self.client.post("/api/import-template", data=template, content_type="text/plain")
         self.assertEqual(response.status_code, 200)
         payload = response.get_json()["payload"]
         self.assertEqual(payload["schedule_name"], "Imported Plan")

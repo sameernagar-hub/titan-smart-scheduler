@@ -98,8 +98,8 @@ img { max-width: 100%; display: block; }
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: 18px 22px;
-  padding: 18px 20px;
+  gap: 14px 18px;
+  padding: 18px;
   border: 1px solid var(--line);
   border-radius: 28px;
 }
@@ -107,7 +107,7 @@ img { max-width: 100%; display: block; }
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   text-decoration: none;
   flex: 0 0 auto;
   min-width: 0;
@@ -139,8 +139,9 @@ img { max-width: 100%; display: block; }
 .main-nav {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 8px;
   justify-content: center;
+  align-items: center;
   min-width: 0;
   overflow-x: auto;
   overflow-y: hidden;
@@ -171,12 +172,18 @@ textarea,
   border: 1px solid var(--line);
 }
 
-.main-nav a,
-.theme-picker {
-  padding: 10px 14px;
+.main-nav a {
+  padding: 10px 13px;
   border-radius: 999px;
   background: var(--panel-2);
   text-decoration: none;
+  white-space: nowrap;
+}
+
+.theme-picker {
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: var(--panel-2);
   white-space: nowrap;
 }
 
@@ -189,13 +196,24 @@ textarea,
 .theme-picker {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex: 0 0 auto;
   justify-self: end;
   min-width: 0;
 }
 
-.theme-picker span { color: var(--muted); font-size: 0.9rem; }
+.theme-picker label { color: var(--muted); font-size: 0.9rem; }
+.theme-select {
+  width: auto;
+  min-width: 132px;
+  padding: 8px 34px 8px 12px;
+  border-radius: 999px;
+  background-color: color-mix(in srgb, var(--bg-elevated) 84%, var(--panel-2));
+  box-shadow: none;
+}
+.theme-select:focus-visible {
+  transform: none;
+}
 .theme-switcher { display: inline-flex; gap: 8px; flex-wrap: wrap; }
 .theme-chip {
   border: 1px solid var(--line);
@@ -234,6 +252,7 @@ body.page-ready .page-shell > * {
 
 .hero-panel,
 .page-intro,
+.activity-stage,
 .feature-card,
 .spotlight-card,
 .table-card,
@@ -1033,11 +1052,21 @@ textarea { resize: vertical; min-height: 90px; }
 }
 .algorithm-card {
   border: 1px solid var(--line);
+  appearance: none;
+  width: 100%;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
   display: grid;
   gap: 10px;
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--panel-3) 75%, transparent), transparent),
     var(--panel-2);
+}
+.algorithm-card strong,
+.algorithm-card p,
+.algorithm-card small {
+  pointer-events: none;
 }
 .algorithm-card.active {
   transform: translateY(-4px) scale(1.01);

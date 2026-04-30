@@ -60,12 +60,12 @@
       <div class="algorithm-grid">
         {% for key, item in algorithms.items() %}
           {% if key != 'standard' %}
-            <article class="algorithm-card" data-algorithm="{{ key }}">
+            <button class="algorithm-card" type="button" data-algorithm="{{ key }}">
               <span class="eyebrow">{{ item.family }}</span>
               <strong>{{ item.label }}</strong>
               <p>{{ item.summary }}</p>
               <small>{{ item.tagline }}</small>
-            </article>
+            </button>
           {% endif %}
         {% endfor %}
       </div>
@@ -73,17 +73,17 @@
 
     <section class="card inset">
       <div class="card-title-row">
-        <h3>Bulk Planning File</h3>
+        <h3>Planning Worksheet</h3>
         <details class="help-pop">
           <summary aria-label="Explain bulk planning file">?</summary>
-          <div>Download a JSON planning template, fill it out offline, then upload it here to populate the scheduling form automatically.</div>
+          <div>Download a plain text worksheet, fill in the labeled fields, then upload it here to populate the scheduling form automatically.</div>
         </details>
       </div>
-      <p class="muted small">This is useful when you would rather edit one file than fill every field manually on the page.</p>
+      <p class="muted small">Use this when you would rather fill a simple text worksheet than complete every form field one by one.</p>
       <div class="cta-row">
-        <a class="ghost-btn" href="/api/input-template">Download Template</a>
-        <label class="ghost-btn upload-btn" for="templateUpload">Upload Filled Template</label>
-        <input id="templateUpload" type="file" accept=".json,application/json" class="hidden">
+        <a class="ghost-btn" href="/api/input-template">Download Text Worksheet</a>
+        <label class="ghost-btn upload-btn" for="templateUpload">Upload Filled Worksheet</label>
+        <input id="templateUpload" type="file" accept=".txt,text/plain" class="hidden">
       </div>
     </section>
 
